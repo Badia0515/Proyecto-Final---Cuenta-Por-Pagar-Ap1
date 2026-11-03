@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CuentasPorPagar.Api/CuentasPorPagar.Api.csproj" />
+  <Project Path="CuentasPorPagar.Data/CuentasPorPagar.Data.csproj" />
+  <Project Path="CuentasPorPagar.Services/CuentasPorPagar.Services.csproj" />
+  <Project Path="Empleado/Empleado.csproj" />
+  <Project Path="Gerente/Gerente.csproj" />
+</Solution>
