@@ -27,8 +27,5 @@ public class Aprovaciones
     public virtual Pagos Pago { get; set; } = null!;
 
     [ForeignKey("UsuarioId")]
-    public virtual Usuarios Usuario { get; set; } = null!
-
-
+    public virtual Usuarios Usuario { get; set; } = null!;
 }
-
