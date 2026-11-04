@@ -1,3 +1,8 @@
+using CuentasPorPagar.Data;
+using CuentasPorPagar.Data.Models;
+using CuentasPorPagar.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,6 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+builder.Services.AddDbContextFactory<ContextBD>(options =>options.UseSqlite(builder.Configuration.GetConnectionString("Conexion")));
+builder.Services.AddScoped<ProveedoresService>();
+builder.Services.AddControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

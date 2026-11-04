@@ -1,0 +1,113 @@
+﻿@page "/Proveedor/Index"
+@rendermode InteractiveServer
+<PageTitle>Registro de Proveedores</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center mb-4">
+            <h5 class="card-title">Registro de Proveedores</h5>
+            <a href="/Proveedor/Crear" class="btn btn-primary">
+                <span class="bi bi-plus-square mt-3"></span> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            @*labels*@
+            <div class="row">
+
+                @*Filtrar por*@
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                </div>
+
+                @*ValorFiltro*@
+                <div class="col-4">
+                    <label class="col-form-label"><strong>Búsqueda</strong></label>
+                </div>
+            </div>
+
+            @*Inputs y botones*@
+            <div class="row align-items-center">
+
+                @*filtro*@
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="Filtor">
+                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Rnc">RNC</option>
+                    </InputSelect>
+                </div>
+
+                @*Busqueda*@
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                    </div>
+                </div>
+
+            </div>
+
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>ProveedorId</th>
+                        <th>Nombre</th>
+                        <th>RNC</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var Proveedor in proveedores)
+                    {
+                        <tr>
+                            <td>@Proveedor.ProveedorId</td>
+                            <td>@Proveedor.Nombre</td>
+                            <td>@Proveedor.Rnc</td>
+                            <td>@Proveedor.Telefono</td>
+                            <td>@Proveedor.Direccion</td>
+                            <td>
+                                @if (Proveedor.Estado)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactivo</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <a href="/Proveedor/Editar/@Proveedor.ProveedorId"
+                                   class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-center mb-4">
+            <label>Cantidad: @proveedores.Count()</label>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    public List<Proveedores> proveedores { get; set; } = [];
+    public string Filtor { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    public async Task Filtrar()
+    {
+        
+    }
+
+
+}

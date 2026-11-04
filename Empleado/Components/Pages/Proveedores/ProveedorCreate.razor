@@ -1,0 +1,65 @@
+﻿@page "/Proveedor/Crear"
+@rendermode InteractiveServer
+<EditForm Model="proveedor" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Crear Proveedor</h5>
+            </div>
+
+            <div class="card-body">
+
+                @*Nombre*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="proveedor.Nombre"></InputText>
+                    <ValidationMessage For="(() => proveedor.Nombre)" />
+                </div>
+
+                @*RNC*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>RNC</strong></label>
+                    <InputText class="form-control" @bind-Value="proveedor.Rnc"></InputText>
+                    <ValidationMessage For="(() => proveedor.Rnc)" />
+                </div>
+
+                @*Telefono*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Teléfono</strong></label>
+                    <InputText class="form-control" @bind-Value="proveedor.Telefono"></InputText>
+                    <ValidationMessage For="(() => proveedor.Telefono)" />
+                </div>
+
+                @*Direccion*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Dirección</strong></label>
+                    <InputText class="form-control" @bind-Value="proveedor.Direccion"></InputText>
+                    <ValidationMessage For="(() => proveedor.Direccion)" />
+                </div>
+            </div>
+
+            @*Footer*@
+            <div class="card-footer text-center mt-2">
+                <a href="/Proveedor/Index" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+
+                <button type="submit" class="btn btn-primary bi bi-floppy">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Proveedores proveedor { get; set; } = new();
+
+    public async Task Guardar()
+    {
+       
+    }
+
+}
