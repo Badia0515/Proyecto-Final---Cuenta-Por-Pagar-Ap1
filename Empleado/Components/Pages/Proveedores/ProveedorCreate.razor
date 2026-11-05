@@ -1,5 +1,6 @@
 ﻿@page "/Proveedor/Crear"
 @rendermode InteractiveServer
+@inject ProveedoresService proveedoresService;
 <EditForm Model="proveedor" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
@@ -59,7 +60,7 @@
 
     public async Task Guardar()
     {
-       
+        
     }
 
 }
