@@ -9,14 +9,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+var Conexion = builder.Configuration.GetConnectionString("Conexion");
 
-builder.Services.AddDbContextFactory<ContextBD>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
+builder.Services.AddDbContextFactory<ContextBD>(o => o.UseSqlServer(Conexion));
+
 builder.Services.AddScoped<ProveedoresService>();
 builder.Services.AddScoped<FacturasService>();
 builder.Services.AddScoped<PagosService>();
 builder.Services.AddScoped<DevolucionesService>();
 builder.Services.AddControllers();
+
+
+var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
