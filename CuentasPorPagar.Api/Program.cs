@@ -11,7 +11,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-builder.Services.AddDbContextFactory<ContextBD>(options =>options.UseSqlite(builder.Configuration.GetConnectionString("Conexion")));
+builder.Services.AddDbContextFactory<ContextBD>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
 builder.Services.AddScoped<ProveedoresService>();
 builder.Services.AddScoped<FacturasService>();
 builder.Services.AddScoped<PagosService>();
