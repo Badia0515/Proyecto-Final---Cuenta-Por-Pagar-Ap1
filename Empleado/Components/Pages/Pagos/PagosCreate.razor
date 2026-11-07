@@ -1,0 +1,99 @@
+﻿@page "/pagosCreate"
+@rendermode InteractiveServer
+@inject PagosService pagosService
+@* @inject ToastService toastServices *@
+
+
+@*HTML*@
+<PageTitle>Registrar Pago</PageTitle>
+
+<EditForm Model="Pago" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title mt-2">Registrar Pago</h5>
+            </div>
+
+            <div class="card-body">
+                @*PagoId*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Id</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Pago.PagosId" readonly></InputNumber>
+                </div>
+
+                @*Facturas*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Factura Id</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Pago.FacturaId"></InputNumber>
+                    <ValidationMessage For="(() => Pago.FacturaId)" />
+                </div>
+
+                @*Referencias*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Referencia</strong></label>
+                    <InputText class="form-control" @bind-Value="Pago.Referencia"></InputText>
+                    <ValidationMessage For="(() => Pago.Referencia)" />
+                </div>
+
+                @*Monto*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Monto</strong></label>
+                    <InputNumber class="form-control" typeof="email" @bind-Value="Pago.Monto"></InputNumber>
+                    <ValidationMessage For="(() => Pago.Monto)" />
+                </div>
+
+                @*Fecha de Pago Programada*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de pago programada</strong></label>
+                    <InputDate class="form-control" @bind-Value="Pago.FechaProgramada"></InputDate>
+                    <ValidationMessage For="(() => Pago.FechaProgramada)" />
+                </div>
+
+                @*Estado*@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estado</strong></label>
+                    <InputSelect class="form-control" @bind-Value="Pago.Estado"></InputSelect>
+                    <ValidationMessage For="(() => Pago.Estado)" />
+                </div>
+            </div>
+
+            @*footer*@
+            <div class="card-footer text-center mt-2">
+                <a href="/EstudianteIndex" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@Mensaje
+
+@code {
+    private Pagos Pago = new Pagos();
+    public string Mensaje { get; set; } = string.Empty;
+
+    private async Task Guardar()
+    {
+        var crearResult = await pagosService.Guardar(Pago);
+
+        crearResult.OnSuccess(() =>
+        {
+            toastService.ShowSuccess("El estudiante ha sido agregado correctamente");
+            NavigationManager.NavigateTo("/pagosIndex");
+        });
+
+        crearResult.OnFailure(() =>
+        {
+            if (pagosService.Buscar(Pago.PagosId) != null)
+            {
+                Console.WriteLine("")
+            }
+
+            toastServices.ShowError("Error al agregar al estudiante");
+        });
+    }
+}

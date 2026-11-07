@@ -1,0 +1,142 @@
+﻿@page "/Pagos/pagosIndex"
+@rendermode InteractiveServer
+@inject PagosService pagosService
+
+<PageTitle>Base de Datos Estudiantil</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center mb-4">
+            <h3 class="card-title">Listado de Estudiantes</h3>
+
+            <a href="/crearEstudiante" class="btn btn-primary">
+                <span class="bi bi-plus-square mt-3"></span> Agregar Estudiante
+            </a>
+        </div>
+
+        <div class="card-body">
+            @*labels*@
+            <div class="row">
+                @*Filtrar por*@
+                <div class="col-3">
+                    <label class="col-form-label">
+                        <strong>Filtrar por</strong>
+                    </label>
+                </div>
+
+                @*ValorFiltro*@
+                <div class="col-4">
+                    <label class="col-form-label">
+                        <strong>Búsqueda</strong>
+                    </label>
+                </div>
+            </div>
+
+            @*Inputs y botones*@
+            <div class="row align-items-center">
+                @*filtro*@
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="filtro">
+                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="Id">ID</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Email">Email</option>
+                    </InputSelect>
+                </div>
+
+                @*Busqueda*@
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid mt-3">
+                <QuickGrid Items="@itemsQueryable">
+                    <PropertyColumn Property="@(p => p.PagosId)" Title="Id" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.FacturaId)" Title="Factura" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Referencia)" Title="Referencia" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Monto)" Title="Monto" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Estado)" Title="Estado" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.FechaProgramada)" Title="Fecha de Nacimiento" Format="yyyy-MM-dd" Sortable="true"/>
+
+                    <TemplateColumn Title="Acciones">
+                        <a href="@($"/Pagos/pagosEdit/")"
+                           class="btn btn-primary bi bi-pencil-square"></a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-center mb-4">
+            <label><strong>Cantidad:</strong> @itemsQueryable?.Count()</label>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Pagos> Pago = new();
+    private IQueryable<Pagos> itemsQueryable;
+    private Pagos PagoSeleccionado = new();
+
+    private string filtro { get; set; } = string.Empty;
+    private string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await pagosService.GetList(e => true);
+
+        result.OnSuccess(p => Pago = p);
+
+        itemsQueryable = Pago.AsQueryable();
+    }
+
+    private async Task Buscar()
+    {
+        if (ValorFiltro == "")
+        {
+            var result = await pagosService.GetList(e => true);
+            result.OnSuccess(p => Pago = p);
+        }
+        else if (ValorFiltro.Trim() != "" && filtro == "Id")
+        {
+            var result = await pagosService.GetList(p =>
+                p.PagosId.ToString().Contains(ValorFiltro));
+
+            result.OnSuccess(p => Pago = p);
+        }
+        else if (ValorFiltro.Trim() != "" && filtro == "Factura")
+        {
+            var result = await pagosService.GetList(p =>
+                p.FacturaId.ToString().ToLower().Contains(ValorFiltro.ToLower()));
+
+            result.OnSuccess(p => Pago = p);
+        }
+        else if (ValorFiltro.Trim() != "" && filtro == "Referencia")
+        {
+            var result = await pagosService.GetList(p =>
+                p.Referencia != null && p.Referencia.ToLower().Contains(ValorFiltro.ToLower()));
+
+            result.OnSuccess(p => Pago = p);
+        }
+        else if (ValorFiltro.Trim() != "" && filtro == "Monto") 
+        {
+            var result = await pagosService.GetList(p =>
+             p.Monto.ToString().ToLower().Contains(ValorFiltro.ToLower()));
+
+            result.OnSuccess(p => Pago = p);
+        }
+        else if (ValorFiltro.Trim() != "" && filtro == "Estado")
+        {
+            var result = await pagosService.GetList(p =>
+                p.Estado != null && p.Estado.ToLower().Contains(ValorFiltro.ToLower()));
+
+            result.OnSuccess(p => Pago = p);
+        }
+
+        itemsQueryable = Pago.AsQueryable();
+    }
+}
+
