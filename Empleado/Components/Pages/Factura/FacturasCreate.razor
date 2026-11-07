@@ -1,0 +1,106 @@
+﻿@page "/Factura/Create"
+@inject FacturasService facturaService
+<PageTitle>Crear Factura</PageTitle>
+@*Validacion*@
+<EditForm Model="factura" OnValidSubmit="Guardar" FormName="Registro">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card border-3">
+            <h4>Registro de Facturas</h4>
+        </div>
+        <div class="card border-3">
+            @*Encabezado de Factura*@
+            <div class="mb-3">
+                <label>Numero de Factura</label>
+                <InputNumber @bind-Value="factura.NumFactura" />
+                <ValidationMessage For="@(() => factura.NumFactura)" />
+            </div>
+            <div class="mb-3">
+                <label>Proveedor</label>
+                <InputSelect @bind-Value="factura.ProveedorId">
+                    <option value="0">Elija una opcion</option>
+                    @foreach (var proveedor in ListaProveedores)
+                    {
+                        <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => factura.ProveedorId)" />
+            </div>
+            <div class="mb-3">
+                <label>Fecha</label>
+                <InputDate @bind-Value="factura.Fecha" />
+                <ValidationMessage For="@(() => factura.Fecha)" />
+            </div>
+            <div class="mb-3">
+                <label>Estado</label>
+                <InputText @bind-Value="factura.Estado" />
+                <ValidationMessage For="@(() => factura.Estado)" />
+            </div>
+            @*Detalle de Factura*@
+            <div class="border p-3 mt-3">
+                <h4>Detalle de la Factura</h4>
+                <PickerProveedor  OnDetalleSelected="HandleDetalleSelected" />
+                @*Tabla para mostrar los detalles*@
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Descripcion</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Importe</th>
+                            <th>Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detalle in FacturaDetalles)
+                        {
+                            <tr>
+                                <td>@detalle.Descripcion</td>
+                                <td>@detalle.Cantidad</td>
+                                <td>@detalle.Precio</td>
+                                <td>@(detalle.Cantidad * detalle.Precio)</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="() => EliminarDetalle(detalle)"></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <button type="submit" class="btn btn-success bi bi-plus">Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+@code {
+    public List<FacturaDetalle> FacturaDetalles { get; set; } = [];
+    public Facturas factura { get; set; } = new();
+    public List<Proveedores> ListaProveedores { get; set; } = [];
+    public async Task Guardar()
+    {
+        factura.Detalles = FacturaDetalles;
+        var result = await facturaService.GetList(F => true);
+
+    }
+    public async Task HandleDetalleSelected(FacturaDetalle detalle)
+    {
+        var Existe = FacturaDetalles.Any(D => D.Descripcion == detalle.Descripcion);
+        if (Existe)
+        {
+            return;
+        }
+        var Detalle = new FacturaDetalle
+        {
+            Descripcion = detalle.Descripcion,
+            Cantidad = detalle.Cantidad,
+            Precio = detalle.Precio
+        };
+        FacturaDetalles.Add(Detalle);
+        await Task.CompletedTask;
+    }
+    public void EliminarDetalle(FacturaDetalle detalle)
+    {
+        FacturaDetalles.Remove(detalle);
+    }
+}
