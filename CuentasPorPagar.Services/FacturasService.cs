@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Linq.Expressions;
 using Aplicada1.Core;
 using CuentasPorPagar.Data;
 using CuentasPorPagar.Data.Models;
@@ -20,7 +17,6 @@ namespace CuentasPorPagar.Services
         public async Task<bool> Existe(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-
             return await context.facturas.AnyAsync(F => F.FacturasId == id);
         }
 
@@ -47,6 +43,23 @@ namespace CuentasPorPagar.Services
             context.facturas.Add(facturas);
             return await context.SaveChangesAsync() > 0;
         }
+        public async Task AfectarCantidad(int proveedorId, decimal importe, TipoDeOperacion tipooperacion)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var proveedor = await context.proveedores.FirstOrDefaultAsync(P => P.ProveedorId == proveedorId);
+            if (proveedor != null)
+            {
+                if (tipooperacion == TipoDeOperacion.Suma)
+                {
+                    proveedor.Balance += importe;
+                }
+                else
+                {
+                    proveedor.Balance -= importe;
+                }
+            }
+            await context.SaveChangesAsync();
+        }
 
         public async Task<bool> Editar(Facturas facturas)
         {
@@ -67,6 +80,10 @@ namespace CuentasPorPagar.Services
                 Guardando = await Editar(facturas);
             }
             return Result.Success(Guardando);
+        }
+        public enum TipoDeOperacion
+        {
+            Suma,Resta
         }
     }
 }

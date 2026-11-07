@@ -1,0 +1,45 @@
+﻿@rendermode InteractiveServer
+@*Panel para DetalleFactura*@
+<div class="col-auto input-group align-items-center">
+    <InputText class="form-control" @bind-Value="Descripcion" placeholder="Descripcion" />
+    <InputNumber class="form-control" @bind-Value="Cantidad" placeholder="Cantidad" />
+    <InputNumber class="form-control" @bind-Value="Precio" placeholder="Precio" />
+    <button type="button" class="btn btn bg-primary bi bi-plus" @onclick="TriggerSelected"></button>
+</div>
+@if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert alert-danger" role="alert">
+        @Error
+    </div>
+}
+@code {
+    [Parameter]
+    public EventCallback<FacturaDetalle> OnDetalleSelected { get; set; }
+    public string Descripcion { get; set; } = string.Empty;
+    public int Cantidad { get; set; }
+    public decimal Precio { get; set; }
+    public string Error { get; set; } = string.Empty;
+    public async Task TriggerSelected()
+    {
+        Error = string.Empty;
+        if (!string.IsNullOrWhiteSpace(Descripcion) && Cantidad > 0 && Precio > 0)
+        {
+            var DetalleSeleccionado = new FacturaDetalle
+            {
+                Descripcion = Descripcion,
+                Cantidad = Cantidad,
+                Precio = Precio
+            };
+            await OnDetalleSelected.InvokeAsync(DetalleSeleccionado);
+        }
+        else
+        {
+            Error = "Debes ingresar una descripcion, una cantidad y un precio mayor que 0";
+        }
+    }
+}
+
+
+    
+
+}

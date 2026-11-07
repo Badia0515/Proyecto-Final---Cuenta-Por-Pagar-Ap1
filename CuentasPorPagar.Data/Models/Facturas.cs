@@ -22,5 +22,7 @@ public class Facturas {
     [ForeignKey("ProveedorId")]
     public virtual Proveedores Proveedor { get; set; } = null!;
 
+    public virtual ICollection<FacturaDetalle> Detalles { get; set; } = new List<FacturaDetalle>();
+
 }
 

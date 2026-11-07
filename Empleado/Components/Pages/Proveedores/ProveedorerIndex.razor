@@ -1,7 +1,7 @@
 ﻿@page "/Proveedor/Index"
 @rendermode InteractiveServer
+@inject ProveedoresService proveedoresService
 <PageTitle>Registro de Proveedores</PageTitle>
-
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center mb-4">
@@ -32,8 +32,8 @@
 
                 @*filtro*@
                 <div class="col-3">
-                    <InputSelect class="form-select" @bind-Value="Filtor">
-                        <option value="" selected disabled>Elija una opción</option>
+                    <InputSelect class="form-select" @bind-Value="Filtrar">
+                        <option value="" disabled>Elija una opción</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Rnc">RNC</option>
                     </InputSelect>
@@ -43,7 +43,7 @@
                 <div class="col-4">
                     <div class="input-group">
                         <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
-                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtro"></button>
                     </div>
                 </div>
 
@@ -100,13 +100,38 @@
 
 
 @code {
-    public List<Proveedores> proveedores { get; set; } = [];
-    public string Filtor { get; set; } = string.Empty;
-    public string ValorFiltro { get; set; } = string.Empty;
+    @code {
+        public List<Proveedores> proveedores { get; set; } = [];
+        public string ValorFiltro { get; set; } = string.Empty;
+        public string Filtrar { get; set; } = string.Empty;
 
-    public async Task Filtrar()
-    {
-        
+        protected override async Task OnInitializedAsync()
+        {
+            var result = await proveedoresService.GetList(P => true);
+            proveedores = result.Value;
+        }
+
+        public async Task Filtro()
+        {
+            if (ValorFiltro.Trim() != "")
+            {
+                if (Filtrar == "Nombre")
+                {
+                    var result = await proveedoresService.GetList(P => P.Nombre.Contains(ValorFiltro));
+                    proveedores = result.Value;
+                }
+                else if (Filtrar == "Rnc")
+                {
+                    var result = await proveedoresService.GetList(P => P.Rnc.Contains(ValorFiltro));
+                    proveedores = result.Value;
+                }
+            }
+            else
+            {
+                var result = await proveedoresService.GetList(P => true);
+                proveedores = result.Value;
+            }
+        }
     }
 
 
