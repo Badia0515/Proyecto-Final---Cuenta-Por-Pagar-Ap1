@@ -11,10 +11,7 @@ builder.Services.AddHttpClient("CuentasPorPagarApi", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7000/");
 });
-builder.Services.AddScoped<ProveedoresService>();
-builder.Services.AddScoped<FacturasService>();
-builder.Services.AddScoped<PagosService>();
-builder.Services.AddScoped<DevolucionesService>();
+
 
 var app = builder.Build();
 
