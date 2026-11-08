@@ -82,7 +82,7 @@
 
         crearResult.OnSuccess(() =>
         {
-            toastService.ShowSuccess("El estudiante ha sido agregado correctamente");
+            toastService.ShowSuccess("El pago ha sido registrado correctamente");
             NavigationManager.NavigateTo("/pagosIndex");
         });
 
@@ -93,7 +93,7 @@
                 Console.WriteLine("")
             }
 
-            toastServices.ShowError("Error al agregar al estudiante");
+            toastServices.ShowError("Error al registrar el pago");
         });
     }
 }
