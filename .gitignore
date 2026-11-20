@@ -362,4 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /CuentasPorPagar.Data/Migrations
-/CuentaPorPagar/Migrations
+/CuentaPorPagar/Migrations/20261120030859_MI.cs
+/CuentaPorPagar/Migrations/20261120030859_MI.Designer.cs
+/CuentaPorPagar/Migrations/ContextBDModelSnapshot.cs
