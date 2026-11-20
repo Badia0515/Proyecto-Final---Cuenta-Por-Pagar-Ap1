@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var Conexion = builder.Configuration.GetConnectionString("Conexion");
-builder.Services.AddDbContextFactory<ContextBD>(options => options.UseSqlite(Conexion));
+builder.Services.AddDbContextFactory<ContextBD>(options => options.UseSqlServer(Conexion));
 builder.Services.AddScoped<DevolucionesService>();
 builder.Services.AddScoped<FacturasService>();
 builder.Services.AddScoped<PagosService>();
