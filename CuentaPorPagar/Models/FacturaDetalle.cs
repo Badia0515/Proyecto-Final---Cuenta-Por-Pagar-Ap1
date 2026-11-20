@@ -20,6 +20,8 @@ namespace CuentasPorPagar.Data.Models
         [Range(1, int.MaxValue, ErrorMessage = "Ingrese una cantidad valida")]
         public int Cantidad { get; set; }
 
+        public int ProveedorId { get; set; }
+
         [Range(0.01, double.MaxValue, ErrorMessage = "Ingrese un precio valido")]
         public decimal Precio { get; set; }
 

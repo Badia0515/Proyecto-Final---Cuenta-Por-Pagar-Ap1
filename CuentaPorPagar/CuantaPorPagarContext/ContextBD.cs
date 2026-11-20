@@ -11,6 +11,7 @@ namespace CuentasPorPagar.Data
         public virtual DbSet<Proveedores> proveedores { get; set; }
 
         public virtual DbSet<Facturas>facturas { get; set; }
+        public virtual DbSet<FacturaDetalle> facturaDetalle { get; set; }
 
         public virtual DbSet<Pagos> pagos{ get; set; }
 
