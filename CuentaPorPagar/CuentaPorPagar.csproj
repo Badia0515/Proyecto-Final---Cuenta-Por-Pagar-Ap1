@@ -2,8 +2,13 @@
 
   <ItemGroup>
     <PackageReference Include="Aplicada1.Core" Version="1.1.0" />
+    <PackageReference Include="BootstrapBlazor" Version="11.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="11.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="11.0.0">
