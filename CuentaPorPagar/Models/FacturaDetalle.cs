@@ -24,6 +24,7 @@ namespace CuentasPorPagar.Data.Models
         public decimal Precio { get; set; }
 
         [ForeignKey("FacturasId")]
+        [InverseProperty("Detalles")]
         public virtual Facturas factura { get; set; } = null!;
     }
 }

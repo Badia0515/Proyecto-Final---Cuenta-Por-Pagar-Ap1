@@ -22,6 +22,7 @@ public class Facturas {
     [ForeignKey("ProveedorId")]
     public virtual Proveedores Proveedor { get; set; } = null!;
 
+    [InverseProperty("factura")]
     public virtual ICollection<FacturaDetalle> Detalles { get; set; } = new List<FacturaDetalle>();
 
 }

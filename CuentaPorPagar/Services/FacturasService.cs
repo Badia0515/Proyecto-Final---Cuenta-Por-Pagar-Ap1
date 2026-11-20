@@ -11,7 +11,7 @@ namespace CuentasPorPagar.Services
         public async Task<Result<Facturas?>> Buscar(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.facturas.FirstOrDefaultAsync(F => F.FacturasId == id);
+            return await context.facturas.Include(f => f.Detalles).FirstOrDefaultAsync(f => f.FacturasId == id);
         }
 
         public async Task<bool> Existe(int id)
