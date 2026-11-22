@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents()
 var Conexion = builder.Configuration.GetConnectionString("Conexion");
 builder.Services.AddDbContextFactory<ContextBD>(options => options.UseSqlServer(Conexion));
 builder.Services.AddScoped<DevolucionesService>();
-builder.Services.AddScoped<FacturasService>();
+builder.Services.AddScoped<FacturaServices>();
 builder.Services.AddScoped<PagosService>();
 builder.Services.AddScoped<ProveedoresService>();
 builder.Services.AddScoped<TransaccionServices>();
