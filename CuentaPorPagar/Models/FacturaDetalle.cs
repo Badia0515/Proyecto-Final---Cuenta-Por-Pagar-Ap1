@@ -23,7 +23,7 @@ namespace CuentasPorPagar.Data.Models
         public int ProveedorId { get; set; }
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Ingrese un precio valido")]
-        public decimal Precio { get; set; }
+        public double Precio { get; set; }
 
         [ForeignKey("FacturasId")]
         [InverseProperty("Detalles")]

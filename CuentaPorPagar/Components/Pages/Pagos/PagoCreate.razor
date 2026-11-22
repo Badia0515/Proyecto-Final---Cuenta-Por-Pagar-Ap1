@@ -1,7 +1,7 @@
 ﻿@page "/Pagos/Create"
 @using CuentasPorPagar.Data.Models
 @inject PagosService pagosService
-@inject FacturasService facturasService
+@inject FacturaServices facturasService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
@@ -231,7 +231,7 @@
     public Pagos pago { get; set; } = new Pagos();
     public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
     public Facturas FacturaSeleccionada { get; set; } = new Facturas();
-    public decimal MontoFactura { get; set; }
+    public double MontoFactura { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -242,7 +242,7 @@
         }
     }
 
-    private decimal ObtenerMontoFactura(Facturas factura)
+    private double ObtenerMontoFactura(Facturas factura)
     {
         if (factura.Detalles == null)
             return 0;
