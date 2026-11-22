@@ -1,8 +1,7 @@
-﻿using CuentasPorPagar.Data.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CuentaPorPagar.Data.Models;
+namespace CuentasPorPagar.Data.Models;
 
 public class ProveedorDetalle
 {

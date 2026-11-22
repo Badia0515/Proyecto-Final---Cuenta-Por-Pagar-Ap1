@@ -69,7 +69,39 @@ namespace CuentasPorPagar.Services
             }
             return Result.Success(Guardando);
         }
+        // Reporte
+        public async Task<Result<double>> GetTotalPagos()
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
 
-           
+            var total = await context.pagos.SumAsync(p => p.Monto);
+
+            return Result.Success(total);
+        }
+
+        public async Task<Result<double>> GetTotalPorEstado(string estado)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+
+            var total = await context.pagos.Where(p => p.Estado == estado).SumAsync(p => p.Monto);
+
+            return Result.Success(total);
+        }
+        public async Task<Result<int>> GetCantidadPorEstado(string estado)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var cantidad = await context.pagos.CountAsync(p => p.Estado == estado);
+            return Result.Success(cantidad);
+        }
+
+        public async Task<Result<List<Pagos>>> GetPagosRecientes()
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+
+            var pagos = await context.pagos.AsNoTracking().OrderByDescending(p => p.FechaProgramada).Take(5)
+                .ToListAsync();
+            return Result.Success(pagos);
+        }
+
     }
 }

@@ -1,0 +1,51 @@
+﻿@using ApexCharts
+@if (Facturas.Count > 0)
+{
+    <ApexChart TItem="Facturas"
+               Title="Facturas por Estado"
+               Options="opcionesPie">
+
+        <ApexPointSeries TItem="Facturas"
+                         Items="Facturas"
+                         Name="Cantidad"
+                         SeriesType="SeriesType.Pie"
+                         XValue="@(f => f.Estado)"
+                         YAggregate="@(f => f.Count())"
+                         OrderByDescending="e => e.Y" />
+    </ApexChart>
+}
+else
+{
+    <p class="text-center text-muted my-4">Sin datos para graficar.</p>
+}
+
+@code {
+    [Parameter]
+    public List<Facturas> Facturas { get; set; } = new List<Facturas>();
+
+    private ApexChartOptions<Facturas> opcionesPie = new ApexChartOptions<Facturas>();
+
+    protected override void OnInitialized()
+    {
+        opcionesPie.PlotOptions = new PlotOptions
+        {
+            Pie = new PlotOptionsPie
+            {
+                DataLabels = new PieDataLabels
+                {
+                    External = new PieDataLabelsExternal
+                    {
+                        Show = true,
+                        Connector = new PieDataLabelsExternalConnector
+                        {
+                            Show = true,
+                            Width = 1,
+                            Length = 16,
+                            Gap = 6
+                        }
+                    }
+                }
+            }
+        };
+    }
+}

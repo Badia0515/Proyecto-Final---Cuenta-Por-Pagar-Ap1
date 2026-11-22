@@ -1,5 +1,4 @@
-﻿using CuentaPorPagar.Data.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CuentasPorPagar.Data.Models;

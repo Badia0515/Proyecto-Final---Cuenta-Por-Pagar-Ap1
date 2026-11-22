@@ -1,0 +1,30 @@
+﻿@using ApexCharts
+@if (Pagos.Count > 0)
+{
+    <ApexChart TItem="Pagos"
+               Title="Total Pagado por Mes">
+
+        <ApexPointSeries TItem="Pagos"
+                         Items="Pagos"
+                         Name="Monto Pagado"
+                         XValue="@(p => ObtenerNombreMes(p.FechaProgramada.Month))"
+                         YAggregate="@(p => (decimal)p.Sum(x => x.Monto))"
+                         SeriesType="SeriesType.Bar"
+                         Color="#0d9488" />
+    </ApexChart>
+}
+else
+{
+    <p class="text-center text-muted my-4">No hay pagos emitidos para graficar.</p>
+}
+
+@code {
+    [Parameter]
+    public List<Pagos> Pagos { get; set; } = new List<Pagos>();
+
+    private string ObtenerNombreMes(int mes)
+    {
+        string[] nombresMeses = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
+        return nombresMeses[mes - 1];
+    }
+}
