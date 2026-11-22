@@ -15,6 +15,7 @@ builder.Services.AddScoped<DevolucionesService>();
 builder.Services.AddScoped<FacturasService>();
 builder.Services.AddScoped<PagosService>();
 builder.Services.AddScoped<ProveedoresService>();
+builder.Services.AddScoped<TransaccionServices>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

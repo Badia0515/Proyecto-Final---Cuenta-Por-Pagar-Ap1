@@ -14,12 +14,12 @@ namespace CuentasPorPagar.Data
         public virtual DbSet<Facturas> Facturas { get; set; }
         public virtual DbSet<FacturaDetalle> FacturaDetalle { get; set; }
 
-        public virtual DbSet<Pagos> Pagos{ get; set; }
+        public virtual DbSet<Pagos> pagos{ get; set; }
 
-        public virtual DbSet<Devoluciones> Devoluciones { get; set; }
+        public virtual DbSet<Devoluciones> devoluciones { get; set; }
+
+        public virtual DbSet<Transacciones> transacciones { get; set; }
         public virtual DbSet<ProveedorDetalle> ProveedorDetalle { get; set; }
-
-        public virtual DbSet<Transacciones> Transacciones { get; set; }
 
         public virtual DbSet<Aprovaciones> Aprovaciones { get; set; }
     }

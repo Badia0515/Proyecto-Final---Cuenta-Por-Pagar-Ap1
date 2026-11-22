@@ -15,21 +15,21 @@ namespace CuentasPorPagar.Services
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.Pagos.FirstOrDefaultAsync(P => P.PagosId == id);
+            return await context.pagos.FirstOrDefaultAsync(P => P.PagosId == id);
         }
 
         public async Task<bool> Existe(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.Pagos.AnyAsync(P => P.PagosId == id);
+            return await context.pagos.AnyAsync(P => P.PagosId == id);
         }
 
         public async Task<Result> Eliminar(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            var Eliminado = await context.Pagos.Where(P => P.PagosId == id).ExecuteDeleteAsync() > 0;
+            var Eliminado = await context.pagos.Where(P => P.PagosId == id).ExecuteDeleteAsync() > 0;
 
             return Result.Success(Eliminado);
         }
@@ -39,20 +39,20 @@ namespace CuentasPorPagar.Services
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.Pagos.Where(criterio).AsNoTracking().ToListAsync();
+            return await context.pagos.Where(criterio).AsNoTracking().ToListAsync();
         }
 
         public async Task<bool> Insertar(Pagos pagos)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            context.Pagos.Add(pagos);
+            context.pagos.Add(pagos);
             return await context.SaveChangesAsync() > 0;
         }
 
         public async Task<bool> Editar(Pagos pagos)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            context.Pagos.Update(pagos);
+            context.pagos.Update(pagos);
             return await context.SaveChangesAsync() > 0;
         }
 

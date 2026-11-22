@@ -14,21 +14,21 @@ namespace CuentasPorPagar.Services
         public async Task<Result<Devoluciones?>> Buscar(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.Devoluciones.FirstOrDefaultAsync(D => D.DevolucionId == id);
+            return await context.devoluciones.FirstOrDefaultAsync(D => D.DevolucionId == id);
         }
 
         public async Task<bool> Existe(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.Devoluciones.AnyAsync(D => D.DevolucionId == id);
+            return await context.devoluciones.AnyAsync(D => D.DevolucionId == id);
         }
 
         public async Task<Result> Eliminar(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            var Eliminado = await context.Devoluciones.Where(D => D.DevolucionId == id).ExecuteDeleteAsync() > 0;
+            var Eliminado = await context.devoluciones.Where(D => D.DevolucionId == id).ExecuteDeleteAsync() > 0;
 
             return Result.Success(Eliminado);
         }
@@ -38,20 +38,20 @@ namespace CuentasPorPagar.Services
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.Devoluciones.Where(Lista).AsNoTracking().ToListAsync();
+            return await context.devoluciones.Where(Lista).AsNoTracking().ToListAsync();
         }
 
         public async Task<bool> Insertar(Devoluciones devolucion)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            context.Devoluciones.Add(devolucion);
+            context.devoluciones.Add(devolucion);
             return await context.SaveChangesAsync() > 0;
         }
 
         public async Task<bool> Editar(Devoluciones devolucion)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            context.Devoluciones.Update(devolucion);
+            context.devoluciones.Update(devolucion);
             return await context.SaveChangesAsync() > 0;
         }
 
