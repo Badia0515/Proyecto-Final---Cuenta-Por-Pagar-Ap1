@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CuentaPorPagar.Data.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CuentasPorPagar.Data.Models;
@@ -25,4 +26,7 @@ public class Proveedores
 
     [Required(ErrorMessage ="Indique el Estado del Proveedor")]
     public bool Estado { get; set; }
+
+    [InverseProperty("Proveedor")]
+    public virtual ICollection<ProveedorDetalle> detalle { get; set; } = null!;
 }
