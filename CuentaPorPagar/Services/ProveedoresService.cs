@@ -34,7 +34,6 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     private async Task<bool> Insertar(Proveedores entidad)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        // Evitar referencias cíclicas con los detalles
         foreach (var det in entidad.detalle)
         {
             det.Proveedor = null;
@@ -47,13 +46,12 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     private async Task<bool> Modificar(Proveedores entidad)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        // Cargar el registro previo con sus detalles
+       
         var anterior = await contexto.proveedores
             .Include(p => p.detalle)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ProveedorId == entidad.ProveedorId);
 
-        // Eliminar detalles previos si existen
         if (anterior != null)
         {
             await contexto.ProveedorDetalle
@@ -61,7 +59,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
                 .ExecuteDeleteAsync();
         }
 
-        // Preparar los nuevos detalles (romper referencias y resetear Id)
+        
         foreach (var det in entidad.detalle)
         {
             det.Proveedor = null;
@@ -72,7 +70,6 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    // Buscar
     public async Task<Result<Proveedores?>> Buscar(int id)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
