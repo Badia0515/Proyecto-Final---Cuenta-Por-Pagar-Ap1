@@ -1,4 +1,5 @@
-﻿using CuentasPorPagar.Data.Models;
+﻿using CuentaPorPagar.Data.Models;
+using CuentasPorPagar.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CuentasPorPagar.Data
@@ -16,5 +17,6 @@ namespace CuentasPorPagar.Data
         public virtual DbSet<Pagos> pagos{ get; set; }
 
         public virtual DbSet<Devoluciones> devoluciones { get; set; }
+        public virtual DbSet<ProveedorDetalle> ProveedorDetalle { get; set; }
     }
 }
