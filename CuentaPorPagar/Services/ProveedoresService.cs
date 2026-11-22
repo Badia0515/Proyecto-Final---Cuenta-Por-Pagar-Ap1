@@ -1,67 +1,125 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CuentasPorPagar.Data;
+using Microsoft.EntityFrameworkCore;
 using Aplicada1.Core;
+using CuentasPorPagar.Data;
 using CuentasPorPagar.Data.Models;
 using System.Linq.Expressions;
 
-namespace CuentasPorPagar.Services
+namespace CuentasPorPagar.Services;
+
+public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : IServiceResult<Proveedores, int>
 {
-    public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : IServiceResult<Proveedores, int>
+    // Guardar (Insertar o Modificar)
+    public async Task<Result> Guardar(Proveedores entidad)
     {
-        public async Task<Result<Proveedores?>> Buscar(int id)
+        if (!await Existe(entidad.ProveedorId))
         {
-            await using var context = await contextFactory.CreateDbContextAsync();
+            var inserto = await Insertar(entidad);
+            return Result.Success(inserto);
+        }
+        else
+        {
+            var modifica = await Modificar(entidad);
+            return Result.Success(modifica);
+        }
+    }
 
-            return await context.proveedores.FirstOrDefaultAsync(P => P.ProveedorId == id);
+    // Existencia
+    public async Task<bool> Existe(int proveedorId)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.proveedores.AnyAsync(p => p.ProveedorId == proveedorId);
+    }
+
+    // Insertar
+    private async Task<bool> Insertar(Proveedores entidad)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        // Evitar referencias cíclicas con los detalles
+        foreach (var det in entidad.detalle)
+        {
+            det.Proveedor = null;
+        }
+        contexto.proveedores.Add(entidad);
+        return await contexto.SaveChangesAsync() > 0;
+    }
+
+    // Modificar
+    private async Task<bool> Modificar(Proveedores entidad)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        // Cargar el registro previo con sus detalles
+        var anterior = await contexto.proveedores
+            .Include(p => p.detalle)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ProveedorId == entidad.ProveedorId);
+
+        // Eliminar detalles previos si existen
+        if (anterior != null)
+        {
+            await contexto.ProveedorDetalle
+                .Where(d => d.ProveedorId == entidad.ProveedorId)
+                .ExecuteDeleteAsync();
         }
 
-        public async Task<bool> Existe(int id)
+        // Preparar los nuevos detalles (romper referencias y resetear Id)
+        foreach (var det in entidad.detalle)
         {
-            await using var context = await contextFactory.CreateDbContextAsync();
-
-            return await context.proveedores.AnyAsync(P => P.ProveedorId == id);
+            det.Proveedor = null;
+            det.DetalleId = 0;
         }
 
-        public async Task<Result> Eliminar(int id)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            var eliminado = await context.proveedores.Where(P => P.ProveedorId == id).ExecuteDeleteAsync() > 0;
-            return Result.Success(eliminado);
-        }
+        contexto.proveedores.Update(entidad);
+        return await contexto.SaveChangesAsync() > 0;
+    }
 
-        public async Task<Result<List<Proveedores>>> GetList(Expression<Func<Proveedores, bool>> criterio)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.proveedores.Where(criterio).AsNoTracking().ToListAsync();
-        }
+    // Buscar
+    public async Task<Result<Proveedores?>> Buscar(int id)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.proveedores
+            .Include(p => p.detalle)
+            .ThenInclude(d => d.Pago)
+            .FirstOrDefaultAsync(p => p.ProveedorId == id);
+    }
 
-        public async Task<bool> Insertar(Proveedores entidad)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            context.proveedores.Add(entidad);
-            return await context.SaveChangesAsync() > 0;
-        }
+    // Listado con criterio (GetList)
+    public async Task<Result<List<Proveedores>>> GetList(Expression<Func<Proveedores, bool>> criterio)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.proveedores
+            .Include(p => p.detalle)
+            .ThenInclude(d => d.Pago)
+            .Where(criterio)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 
-        public async Task<bool> Editar(Proveedores entidad)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            context.proveedores.Update(entidad);
-            return await context.SaveChangesAsync() > 0;
-        }
+    // Eliminación
+    public async Task<Result> Eliminar(int id)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        var proveedor = await contexto.proveedores
+            .Include(p => p.detalle)
+            .FirstOrDefaultAsync(p => p.ProveedorId == id);
 
-        public async Task<Result> Guardar(Proveedores entidad)
-        {
-            bool guardando;
-            if (!await Existe(entidad.ProveedorId))
-            {
-                guardando = await Insertar(entidad);
-            }
-            else
-            {
-                guardando = await Editar(entidad);
-            }
+        if (proveedor == null)
+            return Result.Failure(new Error("Proveedor.NoEncontrado", "El proveedor no fue encontrado."));
 
-            return Result.Success(guardando);
-        }
+        contexto.ProveedorDetalle.RemoveRange(proveedor.detalle);
+        contexto.proveedores.Remove(proveedor);
+        var cant = await contexto.SaveChangesAsync();
+        return Result.Success(cant);
+    }
+
+    // Listado simple (Listar)
+    public async Task<List<Proveedores>> Listar(Expression<Func<Proveedores, bool>> criterio)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        return await contexto.proveedores
+            .Include(p => p.detalle)
+            .ThenInclude(d => d.Pago)
+            .Where(criterio)
+            .AsNoTracking()
+            .ToListAsync();
     }
 }
