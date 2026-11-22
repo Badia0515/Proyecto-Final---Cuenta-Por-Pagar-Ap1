@@ -21,7 +21,7 @@ public class Proveedores
     public string Direccion { get; set; } = null!;
 
     [Range(0, double.MaxValue, ErrorMessage = "El balance no puede ser negativo")]
-    public decimal Balance { get; set; } = 0;
+    public double Balance { get; set; } = 0;
 
     [Required(ErrorMessage ="Indique el Estado del Proveedor")]
     public bool Estado { get; set; }
