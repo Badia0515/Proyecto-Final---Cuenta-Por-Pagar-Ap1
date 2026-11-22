@@ -15,12 +15,17 @@ public class Pagos
     public DateOnly FechaProgramada { get; set; }
 
     [Range(1, double.MaxValue, ErrorMessage ="Ingrese un monto valido")]
-    public double Monto { get; set; }
+    public decimal Monto { get; set; }
 
     [Required(ErrorMessage ="Establezca el estado del Pago")]
     public string Estado { get; set; } = null!;
 
     [Required(ErrorMessage ="Debe ingresar una Referencia")]
     public string Referencia { get; set; } = null!;
-}
+       
+    [Required(ErrorMessage = "Seleccione un tipo de pago")]
+    public string TipoPago { get; set; } = string.Empty;
+
+
+    }
 
