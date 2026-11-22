@@ -25,7 +25,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     public async Task<bool> Existe(int facturaId)
     {
         await using var ctx = await contextFactory.CreateDbContextAsync();
-        return await ctx.facturas.AnyAsync(f => f.FacturasId == facturaId);
+        return await ctx.Facturas.AnyAsync(f => f.FacturasId == facturaId);
     }
 
     private async Task<bool> Insertar(Facturas factura)
@@ -36,7 +36,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
         {
             det.factura = null;
         }
-        ctx.facturas.Add(factura);
+        ctx.Facturas.Add(factura);
         await AfectarProveedor(factura.Detalles.ToArray(), Operacion.Suma);
         return await ctx.SaveChangesAsync() > 0;
     }
@@ -44,7 +44,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     private async Task<bool> Modificar(Facturas factura)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        var anterior = await contexto.facturas
+        var anterior = await contexto.Facturas
             .Include(f => f.Detalles)
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.FacturasId == factura.FacturasId);
@@ -56,13 +56,13 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
 
         await AfectarProveedor(factura.Detalles.ToArray(), Operacion.Suma);
         // eliminar detalles antiguos
-        await contexto.facturaDetalle.Where(d => d.FacturasId == factura.FacturasId).ExecuteDeleteAsync();
+        await contexto.FacturaDetalle.Where(d => d.FacturasId == factura.FacturasId).ExecuteDeleteAsync();
         foreach (var item in factura.Detalles)
         {
             item.factura = null;
             item.FacturasId = 0;
         }
-        contexto.facturas.Update(factura);
+        contexto.Facturas.Update(factura);
         return await contexto.SaveChangesAsync() > 0;
     }
 
@@ -71,7 +71,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
         await using var contexto = await contextFactory.CreateDbContextAsync();
         foreach (var d in detalle)
         {
-            var afectar = await contexto.proveedores.SingleAsync(p => p.ProveedorId == d.ProveedorId);
+            var afectar = await contexto.Proveedores.SingleAsync(p => p.ProveedorId == d.ProveedorId);
             if (operacion == Operacion.Suma)
                 afectar.Balance += d.Precio;
             else
@@ -83,7 +83,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     public async Task<Result<Facturas?>> Buscar(int id)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.facturas
+        return await contexto.Facturas
             .Include(f => f.Detalles)
             .Include(f => f.Proveedor)
             .FirstOrDefaultAsync(f => f.FacturasId == id);
@@ -92,7 +92,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     public async Task<Result<List<Facturas>>> GetList(Expression<Func<Facturas, bool>> criterio)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.facturas
+        return await contexto.Facturas
             .Include(f => f.Detalles)
             .Include(d => d.Proveedor)
             .Where(criterio)
@@ -103,7 +103,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     public async Task<Result> Eliminar(int id)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        var factura = await contexto.facturas
+        var factura = await contexto.Facturas
             .Include(f => f.Detalles)
             .FirstOrDefaultAsync(f => f.FacturasId == id);
 
@@ -111,8 +111,8 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
             return Result.Failure(new Error("Factura.NoEncontrada", "La factura no fue encontrada."));
 
         await AfectarProveedor(factura.Detalles.ToArray(), Operacion.Resta);
-        contexto.facturaDetalle.RemoveRange(factura.Detalles);
-        contexto.facturas.Remove(factura);
+        contexto.FacturaDetalle.RemoveRange(factura.Detalles);
+        contexto.Facturas.Remove(factura);
         var cant = await contexto.SaveChangesAsync();
         return Result.Success(cant);
     }
@@ -120,7 +120,7 @@ public class FacturaServices(IDbContextFactory<ContextBD> contextFactory) : ISer
     public async Task<List<Facturas>> Listar(Expression<Func<Facturas, bool>> criterio)
     {
         await using var ctx = await contextFactory.CreateDbContextAsync();
-        return await ctx.facturas
+        return await ctx.Facturas
             .Include(f => f.Detalles)
             .Where(criterio)
             .AsNoTracking()

@@ -27,7 +27,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     public async Task<bool> Existe(int proveedorId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.proveedores.AnyAsync(p => p.ProveedorId == proveedorId);
+        return await contexto.Proveedores.AnyAsync(p => p.ProveedorId == proveedorId);
     }
 
     // Insertar
@@ -38,7 +38,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
         {
             det.Proveedor = null;
         }
-        contexto.proveedores.Add(entidad);
+        contexto.Proveedores.Add(entidad);
         return await contexto.SaveChangesAsync() > 0;
     }
 
@@ -47,7 +47,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
        
-        var anterior = await contexto.proveedores
+        var anterior = await contexto.Proveedores
             .Include(p => p.detalle)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ProveedorId == entidad.ProveedorId);
@@ -66,14 +66,14 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
             det.DetalleId = 0;
         }
 
-        contexto.proveedores.Update(entidad);
+        contexto.Proveedores.Update(entidad);
         return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<Result<Proveedores?>> Buscar(int id)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.proveedores
+        return await contexto.Proveedores
             .Include(p => p.detalle)
             .ThenInclude(d => d.Pago)
             .FirstOrDefaultAsync(p => p.ProveedorId == id);
@@ -83,7 +83,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     public async Task<Result<List<Proveedores>>> GetList(Expression<Func<Proveedores, bool>> criterio)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.proveedores
+        return await contexto.Proveedores
             .Include(p => p.detalle)
             .ThenInclude(d => d.Pago)
             .Where(criterio)
@@ -95,7 +95,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     public async Task<Result> Eliminar(int id)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        var proveedor = await contexto.proveedores
+        var proveedor = await contexto.Proveedores
             .Include(p => p.detalle)
             .FirstOrDefaultAsync(p => p.ProveedorId == id);
 
@@ -103,7 +103,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
             return Result.Failure(new Error("Proveedor.NoEncontrado", "El proveedor no fue encontrado."));
 
         contexto.ProveedorDetalle.RemoveRange(proveedor.detalle);
-        contexto.proveedores.Remove(proveedor);
+        contexto.Proveedores.Remove(proveedor);
         var cant = await contexto.SaveChangesAsync();
         return Result.Success(cant);
     }
@@ -112,7 +112,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
     public async Task<List<Proveedores>> Listar(Expression<Func<Proveedores, bool>> criterio)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.proveedores
+        return await contexto.Proveedores
             .Include(p => p.detalle)
             .ThenInclude(d => d.Pago)
             .Where(criterio)
