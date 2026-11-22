@@ -1,0 +1,189 @@
+﻿@page "/Reportes/Index"
+@rendermode InteractiveServer
+@inject FacturaServices facturasService
+@inject PagosService pagosService
+
+<PageTitle>Reporte General</PageTitle>
+
+<div class="container mt-4">
+    <h4 class="mb-4">Reporte General</h4>
+
+    @* Tarjetas KPI superiores *@
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-start border-success border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Total Pagado</div>
+                    <h4 class="mb-0 fw-bold text-success">RD$ @TotalPagado.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-start border-warning border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Total Pendiente</div>
+                    <h4 class="mb-0 fw-bold text-warning">RD$ @TotalPendiente.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-start border-danger border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted">Total Vencido</div>
+                    <h4 class="mb-0 fw-bold text-danger">RD$ @TotalVencido.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Fila central: Tabla de Facturas y Componente de Grafico Pie *@
+    <div class="row mb-4">
+
+        @* Tabla resumen de Facturas *@
+        <div class="col-md-7 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Facturas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ListaFacturas.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-3">
+                                            No hay facturas registradas.
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var item in ListaFacturas.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@item.NumFactura</td>
+                                            <td>
+                                                @if (item.Proveedor != null)
+                                                {
+                                                    @item.Proveedor.Nombre
+                                                }
+                                                else
+                                                {
+                                                    <span>--</span>
+                                                }
+                                            </td>
+                                            <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>RD$ @ObtenerMontoFactura(item).ToString("N2")</td>
+                                            <td>
+                                                @if (item.Estado == "Pagada")
+                                                {
+                                                    <span class="badge bg-success">@item.Estado</span>
+                                                }
+                                                else if (item.Estado == "Vencida")
+                                                {
+                                                    <span class="badge bg-danger">@item.Estado</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">@item.Estado</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Componente separado de Grafico Pie *@
+        <div class="col-md-5 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Porcentaje Por Estado</h6>
+                </div>
+                <div class="card-body">
+                    <GraficoEstadoFacturas Facturas="ListaFacturas" />
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* Fila inferior: Componente separado de Grafico de Barras *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Pagos por Mes</h6>
+                </div>
+                <div class="card-body">
+                    <GraficoPagosMes Pagos="ListaPagos" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
+    public List<Pagos> ListaPagos { get; set; } = new List<Pagos>();
+    public double TotalPagado { get; set; }
+    public double TotalPendiente { get; set; }
+    public double TotalVencido { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resFacturas = await facturasService.GetList(f => true);
+        if (resFacturas.IsSuccess && resFacturas.Value != null)
+        {
+            ListaFacturas = resFacturas.Value;
+        }
+
+        var resPagos = await pagosService.GetList(p => p.Estado == "Pagado");
+        if (resPagos.IsSuccess && resPagos.Value != null)
+        {
+            ListaPagos = resPagos.Value.OrderBy(p => p.FechaProgramada).ToList();
+        }
+
+        var resTotalPagado = await pagosService.GetTotalPorEstado("Pagado");
+        if (resTotalPagado.IsSuccess)
+        {
+            TotalPagado = resTotalPagado.Value;
+        }
+
+        var resTotalPendiente = await pagosService.GetTotalPorEstado("Pendiente de aprobacion");
+        if (resTotalPendiente.IsSuccess)
+        {
+            TotalPendiente = resTotalPendiente.Value;
+        }
+
+        TotalVencido = ListaFacturas
+            .Where(f => f.Estado == "Vencida")
+            .Sum(f => ObtenerMontoFactura(f));
+    }
+
+    private double ObtenerMontoFactura(Facturas factura)
+    {
+        if (factura.Detalles == null)
+        {
+            return 0;
+        }
+        return (double)factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+}

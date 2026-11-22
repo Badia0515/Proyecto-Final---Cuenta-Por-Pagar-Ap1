@@ -1,4 +1,5 @@
-using CuentaPorPagar.Components;
+using ApexCharts;
+using CuentasPorPagar.Components;
 using CuentasPorPagar.Data;
 using CuentasPorPagar.Services;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ builder.Services.AddScoped<FacturaServices>();
 builder.Services.AddScoped<PagosService>();
 builder.Services.AddScoped<ProveedoresService>();
 builder.Services.AddScoped<TransaccionServices>();
+builder.Services.AddApexCharts();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aplicada1.Core" Version="1.1.0" />
+    <PackageReference Include="Blazor-ApexCharts" Version="8.0.0" />
     <PackageReference Include="BootstrapBlazor" Version="11.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="11.0.0" />
@@ -16,7 +17,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="3.0.2" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="11.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

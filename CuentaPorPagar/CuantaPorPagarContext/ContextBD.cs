@@ -1,5 +1,4 @@
-﻿using CuentaPorPagar.Data.Models;
-using CuentasPorPagar.Data.Models;
+﻿using CuentasPorPagar.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CuentasPorPagar.Data
@@ -22,5 +21,16 @@ namespace CuentasPorPagar.Data
         public virtual DbSet<ProveedorDetalle> ProveedorDetalle { get; set; }
 
         public virtual DbSet<Aprovaciones> Aprovaciones { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ProveedorDetalle>()
+                .HasOne(p => p.Pago)
+                .WithMany()
+                .HasForeignKey(p => p.PagoId)
+                .OnDelete(DeleteBehavior.NoAction);
+        }
+
     }
 }

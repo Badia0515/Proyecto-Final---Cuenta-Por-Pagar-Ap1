@@ -25,5 +25,8 @@ public class Pagos
        
     [Required(ErrorMessage = "Seleccione un tipo de pago")]
     public string TipoPago { get; set; } = string.Empty;
+
+    [ForeignKey("FacturaId")]
+    public virtual Facturas Factura { get; set; } = null!;
 }
 
