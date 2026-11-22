@@ -15,5 +15,7 @@ namespace CuentasPorPagar.Data
         public virtual DbSet<Pagos> pagos{ get; set; }
 
         public virtual DbSet<Devoluciones> devoluciones { get; set; }
+
+        public virtual DbSet<Transacciones> transacciones{ get; set; }
     }
 }
