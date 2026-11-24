@@ -1,0 +1,263 @@
+﻿@page "/Devoluciones/Edit/{id:int}"
+@rendermode InteractiveServer
+@inject DevolucionesService devolucionesService
+@inject FacturaServices facturasService
+@inject PagosService pagosService
+@inject NavigationManager navigationManager
+
+<PageTitle>Devolucion de Factura</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex align-items-center gap-3">
+            <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                <label class="bi bi-arrow-return-left fs-4 mb-0"></label>
+            </div>
+            <div>
+                <h5 class="card-title mb-0">Devolucion de Factura</h5>
+                <span class="text-muted">
+                    Editar la devolucion de una factura al proveedor
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="Devolucion" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="row">
+
+                    @* Columna izquierda: Formulario Editar Devolucion *@
+                    <div class="col-md-7 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <label class="bi bi-file-earmark-plus me-2 mb-0">Editar Devolucion</label>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row mb-3 align-items-center">
+                                    <label class="col-sm-4 col-form-label">
+                                        <strong>Factura: <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <InputSelect class="form-select"
+                                                     @bind-Value="Devolucion.FacturasId"
+                                                     @bind-Value:after="OnFacturaChanged">
+                                            <option value="0">Seleccionar Factura</option>
+                                            @foreach (var item in ListaFacturas)
+                                            {
+                                                <option value="@item.FacturasId">Factura #@item.NumFactura</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => Devolucion.FacturasId)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label class="col-sm-4 col-form-label">
+                                        <strong>Fecha de Devolucion: <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <InputDate class="form-control" @bind-Value="Devolucion.Fecha" />
+                                        <ValidationMessage For="@(() => Devolucion.Fecha)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 align-items-center">
+                                    <label class="col-sm-4 col-form-label">
+                                        <strong>Monto: <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <InputNumber class="form-control" @bind-Value="Devolucion.Monto" />
+                                        <ValidationMessage For="@(() => Devolucion.Monto)" />
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <label class="col-sm-4 col-form-label">
+                                        <strong>Motivo: <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <InputTextArea class="form-control" rows="4" placeholder="Ingrese el motivo de la devolucion" @bind-Value="Devolucion.Motivo" />
+                                        <ValidationMessage For="@(() => Devolucion.Motivo)" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @* Columna derecha: Panel Informacion de la Factura *@
+                    <div class="col-md-5 mb-3">
+                        <div class="card shadow-sm h-100 bg-light">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <label class="bi bi-info-circle text-success me-2 mb-0">Informacion de la Factura</label>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <label class="bi bi-people text-success mb-0"><strong> Proveedor:</strong></label>
+                                    <span>
+                                        @if (FacturaSeleccionada != null && FacturaSeleccionada.Proveedor != null)
+                                        {
+                                            @FacturaSeleccionada.Proveedor.Nombre
+                                        }
+                                        else
+                                        {
+                                            <span>--</span>
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <label class="bi bi-file-earmark-text text-success mb-0"><strong> No. Factura:</strong></label>
+                                    <span>
+                                        @if (FacturaSeleccionada != null)
+                                        {
+                                            @FacturaSeleccionada.NumFactura
+                                        }
+                                        else
+                                        {
+                                            <span>--</span>
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <label class="bi bi-calendar-event text-success mb-0"><strong> Fecha Factura:</strong></label>
+                                    <span>
+                                        @if (FacturaSeleccionada != null)
+                                        {
+                                            @FacturaSeleccionada.Fecha.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span>--</span>
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <label class="bi bi-cash text-success mb-0"><strong> Monto Factura:</strong></label>
+                                    <span>
+                                        @if (FacturaSeleccionada != null)
+                                        {
+                                            <span>RD$ @ObtenerMontoFactura(FacturaSeleccionada).ToString("N2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>RD$ 0.00</span>
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <label class="bi bi-coin text-success mb-0"><strong> Saldo Pendiente:</strong></label>
+                                    <span class="fw-bold text-success">RD$ @SaldoPendiente.ToString("N2")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                @* Botones inferiores *@
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar">
+                        <span class="bi bi-x-lg"> Cancelar</span>
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <span class="bi bi-floppy"> Guardar Cambios</span>
+                    </button>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    public Devoluciones Devolucion { get; set; } = new Devoluciones();
+    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
+    public Facturas FacturaSeleccionada { get; set; } = null!;
+    public double SaldoPendiente { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resFacturas = await facturasService.GetList(f => true);
+        if (resFacturas.IsSuccess && resFacturas.Value != null)
+        {
+            ListaFacturas = resFacturas.Value;
+        }
+
+        var result = await devolucionesService.Buscar(id);
+        if (result.Value != null)
+        {
+            Devolucion = result.Value;
+            await OnFacturaChanged();
+        }
+    }
+
+    private async Task OnFacturaChanged()
+    {
+        if (Devolucion.FacturasId == 0)
+        {
+            FacturaSeleccionada = null!;
+            SaldoPendiente = 0;
+            return;
+        }
+
+        var factura = ListaFacturas.FirstOrDefault(f => f.FacturasId == Devolucion.FacturasId);
+        if (factura != null)
+        {
+            FacturaSeleccionada = factura;
+
+            double totalAbonado = 0;
+            var resPagos = await pagosService.GetList(p => p.FacturaId == factura.FacturasId && p.Estado == "Pagado");
+            if (resPagos.IsSuccess && resPagos.Value != null)
+            {
+                totalAbonado = resPagos.Value.Sum(p => p.Monto);
+            }
+
+            SaldoPendiente = ObtenerMontoFactura(factura) - totalAbonado;
+            if (SaldoPendiente < 0)
+            {
+                SaldoPendiente = 0;
+            }
+        }
+    }
+
+    private double ObtenerMontoFactura(Facturas factura)
+    {
+        if (factura.Detalles == null)
+        {
+            return 0;
+        }
+        return (double)factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+
+    private async Task Guardar()
+    {
+        if (Devolucion.FacturasId == 0 || Devolucion.Monto <= 0 || Devolucion.Monto > SaldoPendiente)
+        {
+            return;
+        }
+
+        var resultado = await devolucionesService.Editar(Devolucion);
+        if (resultado)
+        {
+            navigationManager.NavigateTo("/Devoluciones/Index");
+        }
+    }
+
+    private void Cancelar()
+    {
+        navigationManager.NavigateTo("/Devoluciones/Index");
+    }
+}

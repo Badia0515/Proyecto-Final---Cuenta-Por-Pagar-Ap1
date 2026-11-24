@@ -4,6 +4,7 @@
     <PackageReference Include="Aplicada1.Core" Version="1.1.0" />
     <PackageReference Include="Blazor-ApexCharts" Version="8.0.0" />
     <PackageReference Include="BootstrapBlazor" Version="11.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0">
