@@ -1,0 +1,196 @@
+﻿@page "/Devoluciones/Index"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@rendermode InteractiveServer
+@inject DevolucionesService devolucionesService
+@inject NavigationManager navigationManager
+
+<PageTitle>Devoluciones de Facturas</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-box-seam fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Devoluciones de Facturas</h5>
+                    <span class="text-muted">
+                        Consulta y gestion de las devoluciones registradas
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success bi bi-plus-lg" @onclick="Crear">
+                Registrar Devolucion
+            </button>
+        </div>
+
+        <div class="card-body">
+            @* Barra de filtros *@
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Filtrar por:</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Filtrar">
+                        <option value="Factura">No. Factura</option>
+                        <option value="Proveedor">Proveedor</option>
+                        <option value="Motivo">Motivo</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label mb-1"><strong>Busqueda:</strong></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white bi bi-search text-muted"></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Escriba para buscar..."
+                               @bind="FiltrarValor" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Desde:</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaDesde" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Hasta:</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaHasta" />
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="button" class="btn btn-success w-100 bi bi-funnel" @onclick="Filtro">
+                        Filtrar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="Restablecer"></button>
+                </div>
+            </div>
+
+            @* Tabla QuickGrid *@
+            <div class="table-responsive">
+                <QuickGrid Items="ListaDevoluciones.AsQueryable()" Class="table table-bordered table-hover align-middle">
+                    <PropertyColumn Property="d => d.DevolucionId" Title="Id"></PropertyColumn>
+                    <PropertyColumn Property="d => d.Factura != null ? d.Factura.NumFactura : 0" Title="No. Factura"></PropertyColumn>
+                    <PropertyColumn Property="d => d.Factura != null && d.Factura.Proveedor != null ? d.Factura.Proveedor.Nombre : string.Empty" Title="Proveedor"></PropertyColumn>
+                    <PropertyColumn Property="d => d.Fecha" Title="Fecha" Format="dd/MM/yyyy"></PropertyColumn>
+                    <PropertyColumn Property="d => d.Monto" Title="Monto" Format="N2"></PropertyColumn>
+                    <PropertyColumn Property="d => d.Motivo" Title="Motivo"></PropertyColumn>
+                    <TemplateColumn Title="Opciones">
+                        <button type="button" class="btn btn-outline-primary btn-sm bi bi-pencil" @onclick="(() => Editar(context.DevolucionId))"></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm bi bi-trash" @onclick="(() => Eliminar(context.DevolucionId))"></button>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+            @* Barra inferior de resumen *@
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-0 mt-3">
+                <label class="bi bi-layers mb-0">
+                    <strong> Cantidad de devoluciones registradas: @ListaDevoluciones.Count</strong>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Devoluciones> ListaDevoluciones { get; set; } = new List<Devoluciones>();
+    public string Filtrar { get; set; } = "Factura";
+    public string FiltrarValor { get; set; } = string.Empty;
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await devolucionesService.GetList(d => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaDevoluciones = result.Value;
+        }
+    }
+
+    public async Task Filtro()
+    {
+        if (FiltrarValor.Trim() != "")
+        {
+            if (Filtrar == "Factura")
+            {
+                int.TryParse(FiltrarValor, out int numFactura);
+                var result = await devolucionesService.GetList(d => d.Factura != null && d.Factura.NumFactura == numFactura);
+                if (result.IsSuccess && result.Value != null)
+                {
+                    ListaDevoluciones = result.Value;
+                }
+            }
+            else if (Filtrar == "Proveedor")
+            {
+                var result = await devolucionesService.GetList(d => d.Factura != null && d.Factura.Proveedor != null && d.Factura.Proveedor.Nombre.ToLower().Contains(FiltrarValor.Trim().ToLower()));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    ListaDevoluciones = result.Value;
+                }
+            }
+            else if (Filtrar == "Motivo")
+            {
+                var result = await devolucionesService.GetList(d => d.Motivo.ToLower().Contains(FiltrarValor.Trim().ToLower()));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    ListaDevoluciones = result.Value;
+                }
+            }
+        }
+        else
+        {
+            var result = await devolucionesService.GetList(d => true);
+            if (result.IsSuccess && result.Value != null)
+            {
+                ListaDevoluciones = result.Value;
+            }
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            ListaDevoluciones = ListaDevoluciones.Where(d => d.Fecha >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            ListaDevoluciones = ListaDevoluciones.Where(d => d.Fecha <= FechaHasta.Value).ToList();
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        Filtrar = "Factura";
+        FiltrarValor = string.Empty;
+        FechaDesde = null;
+        FechaHasta = null;
+
+        var result = await devolucionesService.GetList(d => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaDevoluciones = result.Value;
+        }
+    }
+
+    private void Crear()
+    {
+        navigationManager.NavigateTo("/Devoluciones/Create");
+    }
+
+    private void Editar(int id)
+    {
+        navigationManager.NavigateTo($"/Devoluciones/Edit/{id}");
+    }
+
+    public async Task Eliminar(int id)
+    {
+        await devolucionesService.Eliminar(id);
+        var result = await devolucionesService.GetList(d => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaDevoluciones = result.Value;
+        }
+    }
+}

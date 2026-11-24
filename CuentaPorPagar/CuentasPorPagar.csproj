@@ -4,6 +4,7 @@
     <PackageReference Include="Aplicada1.Core" Version="1.1.0" />
     <PackageReference Include="Blazor-ApexCharts" Version="8.0.0" />
     <PackageReference Include="BootstrapBlazor" Version="11.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0">
@@ -17,6 +18,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="3.0.2" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CuentaPorPagar.Services\CuentaPorPagar.Services.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
