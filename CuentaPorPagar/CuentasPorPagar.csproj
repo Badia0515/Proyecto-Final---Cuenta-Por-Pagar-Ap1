@@ -19,10 +19,6 @@
     <PackageReference Include="Scalar.AspNetCore" Version="3.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CuentasPorPagar.Test\CuentasPorPagar.Test.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
