@@ -2,6 +2,8 @@
   <Folder Name="/CuentaPorPagar/">
     <Project Path="CuentaPorPagar/CuentasPorPagar.csproj" />
   </Folder>
+  <Project Path="CuentaPorPagar.Data/CuentaPorPagar.Data.csproj" />
+  <Project Path="CuentaPorPagar.Services/CuentaPorPagar.Services.csproj" />
 
   <Project Path="CuentasPorPagar.Test/CuentasPorPagar.Test.csproj" />
 </Solution>
