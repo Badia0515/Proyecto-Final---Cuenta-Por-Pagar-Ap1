@@ -48,7 +48,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet sonarscanner begin \
           /o:"tesisenel" \
-          /k:"CuentaPorPagar" \
+          /k:"TesisEnel_UCNE_CxP_Ap1" \
           /d:sonar.token="${SONAR_TOKEN}" \
           /d:sonar.host.url="https://sonarcloud.io"
     # 7) Compila la solución en modo Release. El flag --no-restore evita que
