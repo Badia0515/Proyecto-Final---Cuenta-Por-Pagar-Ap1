@@ -1,3 +1,7 @@
 <Solution>
+  <Folder Name="/CuentaPorPagar/">
+    <Project Path="CuentaPorPagar/CuentasPorPagar.csproj" />
+  </Folder>
   <Project Path="CuentasPorPagar.csproj" />
+  <Project Path="CuentasPorPagar.Test/CuentasPorPagar.Test.csproj" />
 </Solution>
