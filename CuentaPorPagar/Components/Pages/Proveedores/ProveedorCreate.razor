@@ -1,46 +1,80 @@
 ﻿@page "/Proveedor/Crear"
 @rendermode InteractiveServer
 @inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+
+<PageTitle>Crear Proveedor</PageTitle>
 
 <EditForm Model="proveedor" OnValidSubmit="Guardar" FormName="Crear">
     <DataAnnotationsValidator />
-    <div class="container">
+
+    <div class="container mt-4">
         <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h5 class="card-title">Crear Proveedor</h5>
+            @* Encabezado principal *@
+            <div class="card-header d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-truck fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Crear Proveedor</h5>
+                    <span class="text-muted">
+                        Registra un nuevo proveedor en el sistema
+                    </span>
+                </div>
             </div>
+
             <div class="card-body">
-                @*Nombre*@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <InputText class="form-control" @bind-Value="proveedor.Nombre"></InputText>
-                    <ValidationMessage For="(() => proveedor.Nombre)" />
-                </div>
-                @*RNC*@
-                <div class="mb-3">
-                    <label class="form-label"><strong>RNC</strong></label>
-                    <InputText class="form-control" @bind-Value="proveedor.Rnc"></InputText>
-                    <ValidationMessage For="(() => proveedor.Rnc)" />
-                </div>
-                @*Telefono*@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Teléfono</strong></label>
-                    <InputText class="form-control" @bind-Value="proveedor.Telefono"></InputText>
-                    <ValidationMessage For="(() => proveedor.Telefono)" />
-                </div>
-                @*Direccion*@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Direcci&oacute;n</strong></label>
-                    <InputText class="form-control" @bind-Value="proveedor.Direccion"></InputText>
-                    <ValidationMessage For="(() => proveedor.Direccion)" />
+                <div class="row">
+                    @* Columna izquierda: Nombre, RNC y Telefono *@
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <span class="bi bi-person-fill text-success me-1"></span>
+                                <strong>Nombre</strong>
+                            </label>
+                            <InputText class="form-control" placeholder="Ingrese el nombre del proveedor" @bind-Value="proveedor.Nombre" />
+                            <ValidationMessage For="@(() => proveedor.Nombre)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <span class="bi bi-card-heading text-success me-1"></span>
+                                <strong>RNC</strong>
+                            </label>
+                            <InputText class="form-control" placeholder="Ingrese el RNC" @bind-Value="proveedor.Rnc" />
+                            <ValidationMessage For="@(() => proveedor.Rnc)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <span class="bi bi-telephone-fill text-success me-1"></span>
+                                <strong>Telefono</strong>
+                            </label>
+                            <InputText class="form-control" placeholder="Ingrese el telefono" @bind-Value="proveedor.Telefono" />
+                            <ValidationMessage For="@(() => proveedor.Telefono)" />
+                        </div>
+                    </div>
+
+                    @* Columna derecha: Direccion *@
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <span class="bi bi-geo-alt-fill text-success me-1"></span>
+                                <strong>Direccion</strong>
+                            </label>
+                            <InputTextArea class="form-control" rows="5" placeholder="Ingrese la direccion" @bind-Value="proveedor.Direccion" />
+                            <ValidationMessage For="@(() => proveedor.Direccion)" />
+                        </div>
+                    </div>
                 </div>
             </div>
-            @*Footer*@
-            <div class="card-footer text-center mt-2">
-                <a href="/Proveedor/Index" class="btn btn-secondary">
-                    <span class="bi bi-arrow-left"></span> Volver
-                </a>
-                <button type="submit" class="btn btn-primary bi bi-floppy">
+
+            @* Footer con botones a la derecha *@
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary bi bi-arrow-left" @onclick="Volver">
+                    Volver
+                </button>
+                <button type="submit" class="btn btn-success bi bi-floppy">
                     Guardar
                 </button>
             </div>
@@ -56,5 +90,14 @@
         proveedor.Balance = 0;
         proveedor.Estado = true;
         var resultado = await proveedoresService.Guardar(proveedor);
+        if (resultado.IsSuccess)
+        {
+            navigationManager.NavigateTo("/Proveedor/Index");
+        }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/Proveedor/Index");
     }
 }

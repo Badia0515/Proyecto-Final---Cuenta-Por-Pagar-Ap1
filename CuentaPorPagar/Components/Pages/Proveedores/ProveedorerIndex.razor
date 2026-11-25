@@ -1,138 +1,232 @@
 ﻿@page "/Proveedor/Index"
 @rendermode InteractiveServer
 @inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+
 <PageTitle>Registro de Proveedores</PageTitle>
-<div class="container">
+
+<div class="container mt-4">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-center mb-4">
-            <h5 class="card-title">Registro de Proveedores</h5>
-            <a href="/Proveedor/Crear" class="btn btn-primary">
-                <span class="bi bi-plus-square mt-3"></span> Crear
-            </a>
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-truck fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Registro de Proveedores</h5>
+                    <span class="text-muted">
+                        Consulta y gestion de proveedores del sistema
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success bi bi-plus-lg" @onclick="Crear">
+                Nuevo Proveedor
+            </button>
         </div>
 
         <div class="card-body">
-
-            @*labels*@
-            <div class="row">
-
-                @*Filtrar por*@
-                <div class="col-3">
-                    <label class="col-form-label"><strong>Filtrar por</strong></label>
-                </div>
-
-                @*ValorFiltro*@
-                <div class="col-4">
-                    <label class="col-form-label"><strong>Búsqueda</strong></label>
-                </div>
-            </div>
-
-            @*Inputs y botones*@
-            <div class="row align-items-center">
-
-                @*filtro*@
-                <div class="col-3">
+            @* Barra de filtros *@
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label mb-1"><strong>Filtrar por</strong></label>
                     <InputSelect class="form-select" @bind-Value="Filtrar">
-                        <option value="" disabled>Elija una opci&oacute;n</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Rnc">RNC</option>
+                        <option value="Telefono">Telefono</option>
                     </InputSelect>
                 </div>
 
-                @*Busqueda*@
-                <div class="col-4">
+                <div class="col-md-5">
+                    <label class="form-label mb-1"><strong>Busqueda</strong></label>
                     <div class="input-group">
-                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
-                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Filtro"></button>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Buscar por nombre, RNC o telefono..."
+                               @bind="ValorFiltro" />
+                        <button type="button" class="btn btn-success bi bi-search" @onclick="Filtro"></button>
                     </div>
                 </div>
 
+                <div class="col-md-3">
+                    <label class="form-label mb-1"><strong>Estado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="FiltroEstado" @bind-Value:after="Filtro">
+                        <option value="Todos">Todos</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-outline-secondary w-100 bi bi-arrow-clockwise" @onclick="Restablecer"></button>
+                </div>
             </div>
 
-            <table class="table table-hover">
-                <thead class="table table-striped text-black">
-                    <tr>
-                        <th>ProveedorId</th>
-                        <th>Nombre</th>
-                        <th>RNC</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Estado</th>
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var Proveedor in proveedores)
-                    {
+            @* Tabla de proveedores *@
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-success">
                         <tr>
-                            <td>@Proveedor.ProveedorId</td>
-                            <td>@Proveedor.Nombre</td>
-                            <td>@Proveedor.Rnc</td>
-                            <td>@Proveedor.Telefono</td>
-                            <td>@Proveedor.Direccion</td>
-                            <td>
-                                @if (Proveedor.Estado)
-                                {
-                                    <span class="badge bg-success">Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">Inactivo</span>
-                                }
-                            </td>
-
-                            <td class="text-center">
-                                <a href="/Proveedor/Editar/@Proveedor.ProveedorId"
-                                   class="btn btn-outline-primary bi bi-pencil-square"></a>
-                            </td>
+                            <th>ID</th>
+                            <th>Proveedor</th>
+                            <th>RNC</th>
+                            <th>Telefono</th>
+                            <th>Direccion</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Opciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
 
-        <div class="card-footer d-flex justify-content-between align-center mb-4">
-            <label>Cantidad: @proveedores.Count()</label>
+                    <tbody>
+                        @if (proveedores.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No hay proveedores registrados.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var Proveedor in proveedores)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@Proveedor.ProveedorId.ToString("D3")</td>
+                                    <td class="fw-semibold">@Proveedor.Nombre</td>
+                                    <td>@Proveedor.Rnc</td>
+                                    <td>@Proveedor.Telefono</td>
+                                    <td>@Proveedor.Direccion</td>
+                                    <td class="text-center">
+                                        @if (Proveedor.Estado)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-outline-primary btn-sm bi bi-pencil"
+                                                    @onclick="() => Editar(Proveedor.ProveedorId)"></button>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm bi bi-trash"
+                                                    @onclick="() => Eliminar(Proveedor.ProveedorId)"></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Barra inferior de resumen *@
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-0 mt-3">
+                <label class="bi bi-layers mb-0">
+                    <strong> Total de registros: @proveedores.Count</strong>
+                </label>
+            </div>
         </div>
     </div>
 </div>
 
-
 @code {
-    @code {
-        public List<Proveedores> proveedores { get; set; } = [];
-        public string ValorFiltro { get; set; } = string.Empty;
-        public string Filtrar { get; set; } = string.Empty;
+    public List<Proveedores> proveedores { get; set; } = new List<Proveedores>();
+    public string ValorFiltro { get; set; } = string.Empty;
+    public string Filtrar { get; set; } = "Nombre";
+    public string FiltroEstado { get; set; } = "Todos";
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await proveedoresService.GetList(P => true);
+        if (result.IsSuccess && result.Value != null)
         {
-            var result = await proveedoresService.GetList(P => true);
             proveedores = result.Value;
-        }
-
-        public async Task Filtro()
-        {
-            if (ValorFiltro.Trim() != "")
-            {
-                if (Filtrar == "Nombre")
-                {
-                    var result = await proveedoresService.GetList(P => P.Nombre.Contains(ValorFiltro));
-                    proveedores = result.Value;
-                }
-                else if (Filtrar == "Rnc")
-                {
-                    var result = await proveedoresService.GetList(P => P.Rnc.Contains(ValorFiltro));
-                    proveedores = result.Value;
-                }
-            }
-            else
-            {
-                var result = await proveedoresService.GetList(P => true);
-                proveedores = result.Value;
-            }
         }
     }
 
+    public async Task Filtro()
+    {
+        if (ValorFiltro.Trim() != "")
+        {
+            if (Filtrar == "Nombre")
+            {
+                var result = await proveedoresService.GetList(P => P.Nombre.ToLower().Contains(ValorFiltro.Trim().ToLower()));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    proveedores = result.Value;
+                }
+            }
+            else if (Filtrar == "Rnc")
+            {
+                var result = await proveedoresService.GetList(P => P.Rnc.Contains(ValorFiltro.Trim()));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    proveedores = result.Value;
+                }
+            }
+            else if (Filtrar == "Telefono")
+            {
+                var result = await proveedoresService.GetList(P => P.Telefono.Contains(ValorFiltro.Trim()));
+                if (result.IsSuccess && result.Value != null)
+                {
+                    proveedores = result.Value;
+                }
+            }
+        }
+        else
+        {
+            var result = await proveedoresService.GetList(P => true);
+            if (result.IsSuccess && result.Value != null)
+            {
+                proveedores = result.Value;
+            }
+        }
 
+        if (FiltroEstado == "Activo")
+        {
+            proveedores = proveedores.Where(P => P.Estado).ToList();
+        }
+        else if (FiltroEstado == "Inactivo")
+        {
+            proveedores = proveedores.Where(P => !P.Estado).ToList();
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        Filtrar = "Nombre";
+        ValorFiltro = string.Empty;
+        FiltroEstado = "Todos";
+
+        var result = await proveedoresService.GetList(P => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            proveedores = result.Value;
+        }
+    }
+
+    private void Crear()
+    {
+        navigationManager.NavigateTo("/Proveedor/Crear");
+    }
+
+    private void Editar(int id)
+    {
+        navigationManager.NavigateTo($"/Proveedor/Editar/{id}");
+    }
+
+    public async Task Eliminar(int id)
+    {
+        await proveedoresService.Eliminar(id);
+        var result = await proveedoresService.GetList(P => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            proveedores = result.Value;
+        }
+    }
 }
