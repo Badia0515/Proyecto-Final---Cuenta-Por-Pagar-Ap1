@@ -36,7 +36,7 @@ public class ProveedoresService(IDbContextFactory<ContextBD> contextFactory) : I
         await using var contexto = await contextFactory.CreateDbContextAsync();
         foreach (var det in entidad.detalle)
         {
-            det.Proveedor = null;
+            det.Proveedor = null!;
         }
         contexto.Proveedores.Add(entidad);
         return await contexto.SaveChangesAsync() > 0;

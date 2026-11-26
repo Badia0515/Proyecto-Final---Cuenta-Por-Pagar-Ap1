@@ -1,4 +1,4 @@
-﻿@page "/Proveedor/Crear"
+@page "/Proveedor/Crear"
 @rendermode InteractiveServer
 @inject ProveedoresService proveedoresService
 @inject NavigationManager navigationManager
@@ -84,20 +84,74 @@
 
 @code {
     public Proveedores proveedor { get; set; } = new();
+    public ProveedorDetalle DetalleSeleccionado { get; set; } = new();
+    public List<Proveedores> ListaProveedores { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await proveedoresService.GetList(l => true);
+        result.OnSuccess(l => ListaProveedores = l);
+        DetalleSeleccionado.Cantidad = 1;
+    }
+
+    private async Task HandleProveedorSelected((Proveedores Proveedor, int cantidad) seleccion)
+    {
+        var yaExiste = proveedor.detalle.FirstOrDefault(l => l.ProveedorId == seleccion.Proveedor.ProveedorId);
+        if(yaExiste != null)
+        {
+            yaExiste.Cantidad += seleccion.cantidad;
+        }
+        else
+        {
+            var detalle = new ProveedorDetalle
+            {
+                ProveedorId = seleccion.Proveedor.ProveedorId,
+                Cantidad = seleccion.cantidad,
+                Proveedor = seleccion.Proveedor
+            };
+            proveedor.detalle.Add(detalle);
+        }
+
+        proveedor.Balance = proveedor.detalle.Sum(p => p.Cantidad);
+        DetalleSeleccionado = new ProveedorDetalle { Cantidad = 1 };
+        await Task.CompletedTask;
+    }
 
     public async Task Guardar()
     {
-        proveedor.Balance = 0;
-        proveedor.Estado = true;
-        var resultado = await proveedoresService.Guardar(proveedor);
-        if (resultado.IsSuccess)
+        if (string.IsNullOrWhiteSpace(proveedor.Direccion))
         {
-            navigationManager.NavigateTo("/Proveedor/Index");
+            Console.WriteLine("El concepto es obligatorio");
+            return;
         }
+        // if(proveedor.detalle == null || !proveedor.detalle.Any())
+        // {
+        //     Console.WriteLine("Debe agregar al menos un proveedor en el detalle");
+        //     return;
+        // }
+
+        var result = await proveedoresService.Guardar(proveedor);
+        result.OnSuccess(() =>
+        {
+            Console.WriteLine("El proveedor fue registrado exitosamente");
+            navigationManager.NavigateTo("/Proveedor/Index");
+        });
     }
 
     private void Volver()
     {
         navigationManager.NavigateTo("/Proveedor/Index");
+    }
+
+    public void RemoverDetalle(ProveedorDetalle detalle)
+    {
+        proveedor.detalle.Remove(detalle);
+        proveedor.Balance = proveedor.detalle.Sum(p => p.Cantidad);
+        DetalleSeleccionado = detalle;
+    }
+
+    private string ObtenerNombreProveedor(int proveedorId)
+    {
+        return ListaProveedores.FirstOrDefault(p => p.ProveedorId == proveedorId)?.Nombre ?? $"Proveedor #{proveedorId}";
     }
 }
