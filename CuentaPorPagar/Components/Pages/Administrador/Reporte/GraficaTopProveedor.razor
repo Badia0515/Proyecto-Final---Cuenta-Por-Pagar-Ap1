@@ -1,0 +1,37 @@
+﻿@using ApexCharts
+@using CuentasPorPagar.Data.Models
+
+<div class="card shadow-sm h-100">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <label class="bi bi-trophy text-success fs-5 mb-0"></label>
+        <h6 class="mb-0 fw-bold">Top Proveedores por Monto</h6>
+    </div>
+
+    <div class="card-body">
+        <ApexChart TItem="Facturas" Options="options">
+            <ApexPointSeries TItem="Facturas"
+                             Items="Facturas"
+                             SeriesType="SeriesType.Bar"
+                             Name="Total Facturado"
+                             XValue="@(e => e.Proveedor != null ? e.Proveedor.Nombre : "Sin Proveedor")"
+                             YAggregate="@(e => e.Sum(f => (decimal)f.Detalles.Sum(d => d.Cantidad * d.Precio)))"
+                             OrderByDescending="e => e.Y" />
+        </ApexChart>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Facturas> Facturas { get; set; } = new List<Facturas>();
+
+    private ApexChartOptions<Facturas> options = new ApexChartOptions<Facturas>
+    {
+        PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar
+            {
+                Horizontal = true
+            }
+        }
+    };
+}

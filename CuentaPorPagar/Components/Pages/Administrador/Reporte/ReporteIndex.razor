@@ -1,0 +1,192 @@
+﻿@page "/Reportes/General"
+@rendermode InteractiveServer
+@inject FacturaServices facturasService
+@inject PagosService pagosService
+
+<PageTitle>Reporte General</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado y filtros *@
+        <div class="card-header">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-5 d-flex align-items-center gap-3">
+                    <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                        <label class="bi bi-bar-chart-fill fs-4 mb-0"></label>
+                    </div>
+                    <div>
+                        <h5 class="card-title mb-0">Reportes - Administrador (Resumen General)</h5>
+                        <span class="text-muted small">
+                            Visualiza el resumen general y el comportamiento de las cuentas por pagar.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Desde:</strong></label>
+                    <InputDate class="form-control form-control-sm" @bind-Value="FechaDesde" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Hasta:</strong></label>
+                    <InputDate class="form-control form-control-sm" @bind-Value="FechaHasta" />
+                </div>
+
+                <div class="col-md-3 d-flex gap-2 align-self-end">
+                    <button type="button" class="btn btn-success btn-sm w-100 bi bi-funnel" @onclick="Filtro">
+                        Filtrar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 bi bi-arrow-clockwise" @onclick="Restablecer">
+                        Restablecer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @* 5 Tarjetas de Resumen *@
+            <div class="row g-3 mb-4">
+                <div class="col">
+                    <div class="card bg-light border text-center p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <label class="bi bi-file-earmark-text text-success fs-4 mb-0"></label>
+                            <div class="text-start">
+                                <div class="small text-muted fw-semibold">Total Facturas</div>
+                                <div class="fw-bold fs-5">@TotalFacturas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card bg-info-subtle border-0 text-center p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <label class="bi bi-layers text-primary fs-4 mb-0"></label>
+                            <div class="text-start">
+                                <div class="small text-muted fw-semibold">Total Facturado</div>
+                                <div class="fw-bold text-dark">RD$ @TotalFacturado.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card bg-success-subtle border-0 text-center p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <label class="bi bi-check-circle text-success fs-4 mb-0"></label>
+                            <div class="text-start">
+                                <div class="small text-muted fw-semibold">Pagado</div>
+                                <div class="fw-bold text-success">RD$ @TotalPagado.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card bg-warning-subtle border-0 text-center p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <label class="bi bi-hourglass-split text-warning-emphasis fs-4 mb-0"></label>
+                            <div class="text-start">
+                                <div class="small text-muted fw-semibold">Pendiente</div>
+                                <div class="fw-bold text-warning-emphasis">RD$ @TotalPendiente.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card bg-danger-subtle border-0 text-center p-3 h-100">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <label class="bi bi-exclamation-triangle text-danger fs-4 mb-0"></label>
+                            <div class="text-start">
+                                <div class="small text-muted fw-semibold">Vencido</div>
+                                <div class="fw-bold text-danger">RD$ @TotalVencido.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Fila de 3 Graficas *@
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <FacturaPorMes @key="GraficaClave" Pagos="pagos" />
+                </div>
+
+                <div class="col-md-4">
+                    <GraficaEstadoFactura @key="GraficaClave" Facturas="facturas" />
+                </div>
+
+                <div class="col-md-4">
+                    <GraficaTopProveedor @key="GraficaClave" Facturas="facturas" />
+                </div>
+            </div>
+
+            @* Tabla Detalle de Facturas *@
+            <DetalleFacturaPicker Facturas="facturas" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Facturas> facturas { get; set; } = new List<Facturas>();
+    public List<Pagos> pagos { get; set; } = new List<Pagos>();
+
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+    public int GraficaClave { get; set; }
+
+    public int TotalFacturas { get; set; }
+    public double TotalFacturado { get; set; }
+    public double TotalPagado { get; set; }
+    public double TotalPendiente { get; set; }
+    public double TotalVencido { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Filtro();
+    }
+
+    public async Task Filtro()
+    {
+        var resultFacturas = await facturasService.GetList(f => true);
+        if (resultFacturas.IsSuccess && resultFacturas.Value != null)
+        {
+            facturas = resultFacturas.Value;
+        }
+
+        var resultPagos = await pagosService.GetList(p => p.Estado == "Aprobada");
+        if (resultPagos.IsSuccess && resultPagos.Value != null)
+        {
+            pagos = resultPagos.Value;
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            facturas = facturas.Where(f => f.Fecha >= FechaDesde.Value).ToList();
+            pagos = pagos.Where(p => p.FechaProgramada >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            facturas = facturas.Where(f => f.Fecha <= FechaHasta.Value).ToList();
+            pagos = pagos.Where(p => p.FechaProgramada <= FechaHasta.Value).ToList();
+        }
+
+        TotalFacturas = facturas.Count;
+        TotalFacturado = facturas.Sum(f => f.Detalles.Sum(d => d.Cantidad * d.Precio));
+        TotalPagado = facturas.Where(f => f.Estado == "Pagada").Sum(f => f.Detalles.Sum(d => d.Cantidad * d.Precio));
+        TotalPendiente = facturas.Where(f => f.Estado == "Pendiente").Sum(f => f.Detalles.Sum(d => d.Cantidad * d.Precio));
+        TotalVencido = facturas.Where(f => f.Estado == "Vencida").Sum(f => f.Detalles.Sum(d => d.Cantidad * d.Precio));
+
+        GraficaClave++;
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+
+        await Filtro();
+    }
+}

@@ -1,12 +1,12 @@
 ﻿@using ApexCharts
-@if (Facturas.Count > 0)
+@if (ListaFacturas.Count > 0)
 {
     <ApexChart TItem="Facturas"
                Title="Facturas por Estado"
                Options="opcionesPie">
 
         <ApexPointSeries TItem="Facturas"
-                         Items="Facturas"
+                         Items="ListaFacturas"
                          Name="Cantidad"
                          SeriesType="SeriesType.Pie"
                          XValue="@(f => f.Estado)"
@@ -16,12 +16,12 @@
 }
 else
 {
-    <p class="text-center text-muted my-4">Sin datos para graficar.</p>
+    <div class="text-center text-muted my-4">Sin datos para graficar.</div>
 }
 
 @code {
     [Parameter]
-    public List<Facturas> Facturas { get; set; } = new List<Facturas>();
+    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
 
     private ApexChartOptions<Facturas> opcionesPie = new ApexChartOptions<Facturas>();
 

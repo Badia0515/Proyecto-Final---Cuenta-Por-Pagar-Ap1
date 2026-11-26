@@ -1,0 +1,24 @@
+﻿@using ApexCharts
+<div class="card shadow-sm h-100">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <label class="bi bi-pie-chart text-success fs-5 mb-0"></label>
+        <h6 class="mb-0 fw-bold">Estado de Facturas</h6>
+    </div>
+
+    <div class="card-body">
+        <ApexChart TItem="Facturas" Title="">
+            <ApexPointSeries TItem="Facturas"
+                             Items="Facturas"
+                             SeriesType="SeriesType.Donut"
+                             Name="Facturas"
+                             XValue="@(e => e.Estado)"
+                             YAggregate="@(e => e.Count())"
+                             OrderByDescending="e => e.Y" />
+        </ApexChart>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Facturas> Facturas { get; set; } = new List<Facturas>();
+}
