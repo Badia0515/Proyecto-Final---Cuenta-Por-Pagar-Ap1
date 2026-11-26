@@ -1,0 +1,236 @@
+﻿@page "/Pagos/Aprobar"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@rendermode InteractiveServer
+@inject ProveedoresService proveedoresService
+@inject PagosService pagosService
+<PageTitle>Aprobar Pagos</PageTitle>
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex align-items-center gap-3">
+            <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                <label class="bi bi-calendar2-check fs-4 mb-0"></label>
+            </div>
+            <div>
+                <h5 class="card-title mb-0">Aprobar Pagos</h5>
+                <span class="text-muted">
+                    Autoriza las programaciones de pago registradas por el personal.
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @* Barra de filtros *@
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1"><strong>Proveedor:</strong></label>
+                    <InputSelect class="form-select" @bind-Value="ProveedorId">
+                        <option value="0">Todos los proveedores</option>
+                        @foreach (var prov in proveedores)
+                        {
+                            <option value="@prov.ProveedorId">@prov.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Desde:</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaDesde" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Hasta:</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaHasta" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Estado:</strong></label>
+                    <InputSelect class="form-select" @bind-Value="FiltroEstado">
+                        <option value="Todos">Todos</option>
+                        <option value="Por Aprobar">Por Aprobar</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="button" class="btn btn-success w-100 bi bi-funnel" @onclick="Filtro">
+                        Filtrar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary w-100 bi bi-arrow-clockwise" @onclick="Restablecer">
+                        Restablecer
+                    </button>
+                </div>
+            </div>
+
+            @* Dos columnas: Izquierda tabla Programaciones | Derecha DetallePagoPicker *@
+            <div class="row g-4">
+                <div class="col-md-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="bi bi-layers text-success fs-5 mb-0"></label>
+                                <h6 class="mb-0 fw-bold">Programaciones de Pago</h6>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                                Por Aprobar: @cantidadPorAprobar
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <QuickGrid Items="pagos.AsQueryable()" Class="table table-hover align-middle mb-0">
+                                    <TemplateColumn Title="No. Prog.">
+                                        <span class="fw-semibold">PP-@context.PagosId.ToString("D4")</span>
+                                    </TemplateColumn>
+                                    <TemplateColumn Title="No. Factura">
+                                        <span>F-@(context.Factura?.NumFactura.ToString("D4") ?? "0000")</span>
+                                    </TemplateColumn>
+                                    <TemplateColumn Title="Proveedor">
+                                        <span class="fw-semibold">@(context.Factura?.Proveedor?.Nombre ?? "--")</span>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="p => p.FechaProgramada" Title="Fecha de Pago" Format="dd/MM/yyyy"></PropertyColumn>
+                                    <TemplateColumn Title="Monto">
+                                        <span class="fw-semibold">RD$ @context.Monto.ToString("N2")</span>
+                                    </TemplateColumn>
+                                    <TemplateColumn Title="Estado">
+                                        @if (context.Estado == "Aprobada")
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                                <span class="bi bi-check-circle-fill me-1"></span>@context.Estado
+                                            </span>
+                                        }
+                                        else if (context.Estado == "Rechazada")
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                                <span class="bi bi-x-circle-fill me-1"></span>@context.Estado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                                <span class="bi bi-hourglass-split me-1"></span>@context.Estado
+                                            </span>
+                                        }
+                                    </TemplateColumn>
+                                    <TemplateColumn Title="">
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm bi bi-chevron-right"
+                                                @onclick="() => Seleccionar(context)"></button>
+                                    </TemplateColumn>
+                                </QuickGrid>
+                            </div>
+
+                            @if (pagos.Count == 0)
+                            {
+                                <div class="text-center text-muted py-4">
+                                    No hay programaciones de pago para mostrar.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* Componente Picker*@
+                <div class="col-md-4">
+                    <DetallePagoPicker PagoSeleccionado="pagoSeleccionado"
+                                       OnAprobar="AprobarPago"
+                                       OnRechazar="RechazarPago" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Proveedores> proveedores { get; set; } = new List<Proveedores>();
+    public List<Pagos> pagos { get; set; } = new List<Pagos>();
+    public Pagos? pagoSeleccionado { get; set; }
+
+    public int ProveedorId { get; set; }
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+    public string FiltroEstado { get; set; } = "Por Aprobar";
+    public int cantidadPorAprobar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await proveedoresService.GetList(p => p.Estado);
+        if (result.IsSuccess && result.Value != null)
+        {
+            proveedores = result.Value;
+        }
+
+        await Filtro();
+    }
+
+    public async Task Filtro()
+    {
+        var result = await pagosService.GetList(p => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            pagos = result.Value;
+        }
+
+        if (ProveedorId > 0)
+        {
+            pagos = pagos.Where(p => p.Factura != null && p.Factura.ProveedorId == ProveedorId).ToList();
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            pagos = pagos.Where(p => p.FechaProgramada >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            pagos = pagos.Where(p => p.FechaProgramada <= FechaHasta.Value).ToList();
+        }
+
+        if (FiltroEstado != "Todos")
+        {
+            pagos = pagos.Where(p => p.Estado == FiltroEstado).ToList();
+        }
+
+        var resultCantidad = await pagosService.GetCantidadPorEstado("Por Aprobar");
+        if (resultCantidad.IsSuccess)
+        {
+            cantidadPorAprobar = resultCantidad.Value;
+        }
+
+        pagoSeleccionado = pagos.FirstOrDefault();
+    }
+
+    public async Task Restablecer()
+    {
+        ProveedorId = 0;
+        FechaDesde = null;
+        FechaHasta = null;
+        FiltroEstado = "Por Aprobar";
+
+        await Filtro();
+    }
+
+    private void Seleccionar(Pagos item)
+    {
+        pagoSeleccionado = item;
+    }
+
+    public async Task AprobarPago(int pagosId)
+    {
+        var result = await pagosService.CambiarEstado(pagosId, "Aprobada");
+        if (result)
+        {
+            await Filtro();
+        }
+    }
+
+    public async Task RechazarPago(int pagosId)
+    {
+        var result = await pagosService.CambiarEstado(pagosId, "Rechazada");
+        if (result)
+        {
+            await Filtro();
+        }
+    }
+}

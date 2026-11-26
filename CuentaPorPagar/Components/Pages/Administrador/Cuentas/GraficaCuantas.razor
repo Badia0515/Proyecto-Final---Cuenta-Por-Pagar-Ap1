@@ -1,0 +1,16 @@
+﻿@using ApexCharts
+@using CuentasPorPagar.Components.Pages.Administrador.Cuentas
+<ApexChart TItem="Facturas" Title="Resumen de Cuenta">
+    <ApexPointSeries TItem="Facturas"
+                     Items="Facturas"
+                     SeriesType="SeriesType.Donut"
+                     Name="Monto"
+                     XValue="@(e => e.Estado)"
+                     YAggregate="@(e => e.Sum(f => (decimal)f.Detalles.Sum(d => d.Cantidad * d.Precio)))"
+                     OrderByDescending="e => e.Y" />
+</ApexChart>
+
+@code {
+    [Parameter]
+    public List<Facturas> Facturas { get; set; } = new();
+}

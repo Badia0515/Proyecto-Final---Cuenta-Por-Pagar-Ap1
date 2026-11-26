@@ -69,6 +69,29 @@ namespace CuentasPorPagar.Services
             }
             return Result.Success(Guardando);
         }
+        public async Task<bool> CambiarEstado(int pagosId, string nuevoEstado)
+        {
+            await using var contexto = await contextFactory.CreateDbContextAsync();
+            var pago = await contexto.pagos.FindAsync(pagosId);
+
+            if (pago == null)
+            {
+                return false;
+            }
+
+            pago.Estado = nuevoEstado;
+
+            if (nuevoEstado == "Aprobada")
+            {
+                var factura = await contexto.Facturas.FindAsync(pago.FacturaId);
+                if (factura != null)
+                {
+                    factura.Estado = "Pagada";
+                }
+            }
+
+            return await contexto.SaveChangesAsync() > 0;
+        }
         // Reporte
         public async Task<Result<double>> GetTotalPagos()
         {

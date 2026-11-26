@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+<div class="card shadow-sm h-100">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <label class="bi bi-file-earmark-text text-success fs-5 mb-0"></label>
+        <h6 class="mb-0 fw-bold">Facturas de la Cuenta</h6>
+    </div>
+
+    <div class="card-body">
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <QuickGrid Items="Facturas.AsQueryable()" Class="table table-hover align-middle mb-0">
+                    <TemplateColumn Title="No. Factura">
+                        <span class="fw-semibold">F-@context.NumFactura.ToString("D4")</span>
+                    </TemplateColumn>
+                    <PropertyColumn Property="f => f.Fecha" Title="Fecha" Format="dd/MM/yyyy"></PropertyColumn>
+                    <TemplateColumn Title="Monto">
+                        <span>RD$ @context.Detalles.Sum(d => d.Cantidad * d.Precio).ToString("N2")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Pagado">
+                        <span>RD$ @(context.Estado == "Pagada" ? context.Detalles.Sum(d => d.Cantidad * d.Precio).ToString("N2") : "0.00")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Saldo">
+                        <span class="fw-semibold">RD$ @(context.Estado == "Pagada" ? "0.00" : context.Detalles.Sum(d => d.Cantidad * d.Precio).ToString("N2"))</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Estado">
+                        @if (context.Estado == "Pagada")
+                        {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                <span class="bi bi-check-circle-fill me-1"></span>@context.Estado
+                            </span>
+                        }
+                        else if (context.Estado == "Vencida")
+                        {
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                <span class="bi bi-exclamation-triangle-fill me-1"></span>@context.Estado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                <span class="bi bi-hourglass-split me-1"></span>@context.Estado
+                            </span>
+                        }
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        @if (Facturas.Count == 0)
+        {
+            <div class="text-center text-muted py-3">
+                No hay facturas para mostrar en esta cuenta.
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Facturas> Facturas { get; set; } = new List<Facturas>();
+}
