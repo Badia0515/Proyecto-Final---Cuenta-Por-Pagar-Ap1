@@ -1,0 +1,101 @@
+﻿<div class="row g-3 align-items-end mb-4">
+    <div class="col-md-3">
+        <label class="form-label">
+            <strong>Proveedor <span class="text-danger">*</span></strong>
+        </label>
+        <InputSelect class="form-select" @bind-Value="DetalleActual.ProveedorId">
+            <option value="0">Seleccionar Proveedor</option>
+            @foreach (var prov in Proveedores)
+            {
+                <option value="@prov.ProveedorId">@prov.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            <strong>Descripcion <span class="text-danger">*</span></strong>
+        </label>
+        <input type="text"
+               class="form-control"
+               placeholder="Descripcion del articulo o servicio"
+               @bind="DetalleActual.Descripcion" />
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">
+            <strong>Cantidad <span class="text-danger">*</span></strong>
+        </label>
+        <input type="number"
+               class="form-control"
+               min="1"
+               @bind="DetalleActual.Cantidad" />
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">
+            <strong>Precio <span class="text-danger">*</span></strong>
+        </label>
+        <input type="number"
+               step="0.01"
+               class="form-control"
+               placeholder="0.00"
+               @bind="DetalleActual.Precio" />
+    </div>
+
+    <div class="col-md-1">
+        <button type="button" class="btn btn-success w-100 bi bi-plus-lg" @onclick="Agregar"></button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorPicker))
+{
+    <div class="alert alert-warning py-2 mb-3" role="alert">
+        @ErrorPicker
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<Proveedores> Proveedores { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<FacturaDetalle> OnDetalleAgregado { get; set; }
+
+    public FacturaDetalle DetalleActual { get; set; } = new FacturaDetalle { Cantidad = 1 };
+    public string ErrorPicker { get; set; } = string.Empty;
+
+    private async Task Agregar()
+    {
+        ErrorPicker = string.Empty;
+
+        if (DetalleActual.ProveedorId == 0)
+        {
+            ErrorPicker = "Debe seleccionar un proveedor para el detalle.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(DetalleActual.Descripcion))
+        {
+            ErrorPicker = "Debe ingresar la descripcion del detalle.";
+            return;
+        }
+
+        if (DetalleActual.Cantidad <= 0 || DetalleActual.Precio <= 0)
+        {
+            ErrorPicker = "La cantidad y el precio deben ser mayores a 0.";
+            return;
+        }
+
+        var nuevoDetalle = new FacturaDetalle
+        {
+            ProveedorId = DetalleActual.ProveedorId,
+            Descripcion = DetalleActual.Descripcion,
+            Cantidad = DetalleActual.Cantidad,
+            Precio = DetalleActual.Precio
+        };
+
+        await OnDetalleAgregado.InvokeAsync(nuevoDetalle);
+        DetalleActual = new FacturaDetalle { Cantidad = 1 };
+    }
+}

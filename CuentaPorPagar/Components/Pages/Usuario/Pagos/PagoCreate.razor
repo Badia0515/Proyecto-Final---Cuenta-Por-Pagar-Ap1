@@ -1,0 +1,333 @@
+﻿@page "/Pagos/Programar"
+@using CuentasPorPagar.Data.Models
+@inject PagosService pagosService
+@inject FacturaServices facturasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Programar Pago</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex align-items-center gap-3">
+            <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                <label class="bi bi-calendar-check fs-4 mb-0"></label>
+            </div>
+            <div>
+                <h5 class="card-title mb-0">Programar Pago</h5>
+                <span class="text-muted">
+                    Crear solicitud de programacion de pago para aprobacion del gerente
+                </span>
+            </div>
+        </div>
+
+        <EditForm Model="pago" OnValidSubmit="Guardar" FormName="Programar">
+            <DataAnnotationsValidator />
+
+            <div class="card-body">
+                @* Seleccion de factura *@
+                <div class="row mb-4 align-items-center">
+                    <div class="col-md-2">
+                        <label class="col-form-label">
+                            <strong>Factura: <span class="text-danger">*</span></strong>
+                        </label>
+                    </div>
+
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white bi bi-file-earmark-text text-success"></span>
+                            <InputSelect class="form-select"
+                                         @bind-Value="pago.FacturaId"
+                                         @bind-Value:after="OnFacturaChanged">
+                                <option value="0">Seleccionar Factura</option>
+                                @foreach (var factura in ListaFacturas)
+                                {
+                                    <option value="@factura.FacturasId">
+                                        Factura #@factura.NumFactura - @(factura.Proveedor != null ? factura.Proveedor.Nombre : "Sin Proveedor") (Monto: RD$ @ObtenerMontoFactura(factura).ToString("N2"))
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <ValidationMessage For="@(() => pago.FacturaId)" />
+                    </div>
+                </div>
+
+                @* Resumen de factura *@
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3 d-flex align-items-center gap-2">
+                                <label class="bi bi-person text-success fs-4 mb-0"></label>
+                                <div>
+                                    <div class="text-muted small"><strong>Proveedor</strong></div>
+                                    <div>@(FacturaSeleccionada.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "--")</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 d-flex align-items-center gap-2">
+                                <label class="bi bi-file-earmark-text text-success fs-4 mb-0"></label>
+                                <div>
+                                    <div class="text-muted small"><strong>No. Factura</strong></div>
+                                    <div>@(FacturaSeleccionada.FacturasId > 0 ? $"#{FacturaSeleccionada.NumFactura}" : "--")</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 d-flex align-items-center gap-2">
+                                <label class="bi bi-cash-stack text-success fs-4 mb-0"></label>
+                                <div>
+                                    <div class="text-muted small"><strong>Monto Factura</strong></div>
+                                    <div class="fw-bold">RD$ @MontoFactura.ToString("N2")</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 d-flex align-items-center gap-2">
+                                <label class="bi bi-tag text-success fs-4 mb-0"></label>
+                                <div>
+                                    <div class="text-muted small"><strong>Estado</strong></div>
+                                    <div>
+                                        @if (FacturaSeleccionada.Estado == "Pagada")
+                                        {
+                                            <span class="badge bg-success">@FacturaSeleccionada.Estado</span>
+                                        }
+                                        else if (FacturaSeleccionada.Estado == "Vencida")
+                                        {
+                                            <span class="badge bg-danger">@FacturaSeleccionada.Estado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                @(string.IsNullOrEmpty(FacturaSeleccionada.Estado) ? "Pendiente" : FacturaSeleccionada.Estado)
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Dos columnas centrales *@
+                <div class="row">
+                    @* Columna izquierda: Datos de la Factura *@
+                    <div class="col-md-5 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                                <label class="bi bi-file-earmark-text mb-0"></label>
+                                <h6 class="mb-0">Datos de la Factura</h6>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-shop text-success me-1"></span>
+                                        <strong>Proveedor:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="@(FacturaSeleccionada.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "--")"
+                                           readonly />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-cash-stack text-success me-1"></span>
+                                        <strong>Monto Factura:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="RD$ @MontoFactura.ToString("N2")"
+                                           readonly />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-calendar-event text-success me-1"></span>
+                                        <strong>Fecha Factura:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="@(FacturaSeleccionada.FacturasId > 0 ? FacturaSeleccionada.Fecha.ToString("dd/MM/yyyy") : "--")"
+                                           readonly />
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label">
+                                        <span class="bi bi-calculator text-success me-1"></span>
+                                        <strong>Saldo Pendiente:</strong>
+                                    </label>
+                                    <input class="form-control bg-light fw-bold text-success"
+                                           value="RD$ @SaldoPendiente.ToString("N2")"
+                                           readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* Columna derecha: Programacion del Pago (Solicitud) *@
+                    <div class="col-md-7 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                                <label class="bi bi-calendar-plus mb-0"></label>
+                                <h6 class="mb-0">Programacion del Pago (Solicitud)</h6>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <span class="bi bi-calendar-date text-success me-1"></span>
+                                            <strong>Fecha Programada: <span class="text-danger">*</span></strong>
+                                        </label>
+                                        <InputDate class="form-control"
+                                                   @bind-Value="pago.FechaProgramada" />
+                                        <ValidationMessage For="@(() => pago.FechaProgramada)" />
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <span class="bi bi-cash-coin text-success me-1"></span>
+                                            <strong>Monto a Pagar: <span class="text-danger">*</span></strong>
+                                        </label>
+                                        <InputNumber class="form-control"
+                                                     @bind-Value="pago.Monto" />
+                                        <ValidationMessage For="@(() => pago.Monto)" />
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <span class="bi bi-credit-card text-success me-1"></span>
+                                            <strong>Tipo de Pago: <span class="text-danger">*</span></strong>
+                                        </label>
+                                        <InputSelect class="form-select"
+                                                     @bind-Value="pago.TipoPago">
+                                            <option value="">Seleccionar</option>
+                                            <option value="Transferencia">Transferencia</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Efectivo">Efectivo</option>
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => pago.TipoPago)" />
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <span class="bi bi-hash text-success me-1"></span>
+                                            <strong>Referencia: <span class="text-danger">*</span></strong>
+                                        </label>
+                                        <InputText class="form-control"
+                                                   placeholder="Ingrese referencia"
+                                                   @bind-Value="pago.Referencia" />
+                                        <ValidationMessage For="@(() => pago.Referencia)" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Fila inferior: Flujo de Aprobacion y Botones *@
+                <div class="row align-items-center g-3 mt-1">
+                    <div class="col-md-8">
+                        <div class="alert alert-info d-flex align-items-center gap-3 mb-0">
+                            <label class="bi bi-info-circle fs-4 mb-0"></label>
+                            <div>
+                                <div class="fw-bold">Flujo de Aprobacion</div>
+                                <span>
+                                    Esta solicitud sera enviada al gerente para su revision y aprobacion. Podra ver el estado en el modulo de Programaciones.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary bi bi-arrow-left" @onclick="Cancelar">
+                            Volver
+                        </button>
+                        <button type="submit" class="btn btn-success bi bi-floppy">
+                            Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    public Pagos pago { get; set; } = new Pagos();
+    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
+    public Facturas FacturaSeleccionada { get; set; } = new Facturas();
+    public double MontoFactura { get; set; }
+    public double SaldoPendiente { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pago.FechaProgramada = DateOnly.FromDateTime(DateTime.Now);
+        pago.Estado = "Pendiente de aprobacion";
+
+        var result = await facturasService.GetList(f => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaFacturas = result.Value;
+        }
+    }
+
+    private double ObtenerMontoFactura(Facturas factura)
+    {
+        if (factura.Detalles == null)
+            return 0;
+
+        return (double)factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+
+    private async Task OnFacturaChanged()
+    {
+        var encontrada = ListaFacturas.FirstOrDefault(f => f.FacturasId == pago.FacturaId);
+
+        if (encontrada != null)
+        {
+            FacturaSeleccionada = encontrada;
+            MontoFactura = ObtenerMontoFactura(FacturaSeleccionada);
+
+            double totalPagado = 0;
+            var resPagos = await pagosService.GetList(p => p.FacturaId == encontrada.FacturasId && p.Estado == "Pagado");
+            if (resPagos.IsSuccess && resPagos.Value != null)
+            {
+                totalPagado = resPagos.Value.Sum(p => p.Monto);
+            }
+
+            SaldoPendiente = MontoFactura - totalPagado;
+            if (SaldoPendiente < 0)
+            {
+                SaldoPendiente = 0;
+            }
+
+            pago.Monto = SaldoPendiente;
+        }
+        else
+        {
+            FacturaSeleccionada = new Facturas();
+            MontoFactura = 0;
+            SaldoPendiente = 0;
+            pago.Monto = 0;
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (pago.FacturaId == 0 || pago.Monto <= 0 || pago.Monto > SaldoPendiente)
+        {
+            return;
+        }
+
+        pago.Estado = "Pendiente de aprobacion";
+
+        var result = await pagosService.Guardar(pago);
+        if (result.IsSuccess)
+        {
+            navigationManager.NavigateTo("/Pagos/Index");
+        }
+    }
+
+    private void Cancelar()
+    {
+        navigationManager.NavigateTo("/Pagos/Index");
+    }
+}

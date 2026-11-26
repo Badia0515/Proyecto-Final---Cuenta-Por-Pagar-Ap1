@@ -1,0 +1,263 @@
+﻿@page "/Facturas/Index"
+@using CuentasPorPagar.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@rendermode InteractiveServer
+@inject FacturaServices facturasService
+@inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+
+<PageTitle>Facturas</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-file-earmark-text fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Facturas</h5>
+                    <span class="text-muted">
+                        Consulta y administra las facturas registradas en el sistema
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success bi bi-plus-square" @onclick="Crear">
+                Nueva Factura
+            </button>
+        </div>
+
+        <div class="card-body">
+            @* Barra de filtros *@
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Filtrar por Estado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="FiltroEstado" @bind-Value:after="Filtro">
+                        <option value="Todos">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Pagada">Pagada</option>
+                        <option value="Vencida">Vencida</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label mb-1"><strong>Proveedor</strong></label>
+                    <InputSelect class="form-select" @bind-Value="FiltroProveedorId" @bind-Value:after="Filtro">
+                        <option value="0">Todos los proveedores</option>
+                        @foreach (var prov in ListaProveedores)
+                        {
+                            <option value="@prov.ProveedorId">@prov.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Desde</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaDesde" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label mb-1"><strong>Hasta</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaHasta" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label mb-1"><strong>Busqueda</strong></label>
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="No. Factura, RNC o Proveedor"
+                               @bind="ValorFiltro" />
+                        <button type="button" class="btn btn-success bi bi-search" @onclick="Filtro"></button>
+                        <button type="button" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            @* Cuadro con sombra y tabla QuickGrid *@
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <QuickGrid Items="ListaFacturas.AsQueryable()" Class="table table-hover align-middle mb-0">
+                        <PropertyColumn Property="f => f.FacturasId" Title="ID"></PropertyColumn>
+                        <TemplateColumn Title="No. Factura">
+                            <span>F-@context.NumFactura.ToString("D4")</span>
+                        </TemplateColumn>
+                        <PropertyColumn Property="f => f.Proveedor != null ? f.Proveedor.Nombre : string.Empty" Title="Proveedor"></PropertyColumn>
+                        <PropertyColumn Property="f => f.Fecha" Title="Fecha" Format="dd/MM/yyyy"></PropertyColumn>
+                        <TemplateColumn Title="Monto">
+                            <span class="fw-semibold">RD$ @ObtenerMontoFactura(context).ToString("N2")</span>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Estado">
+                            @if (context.Estado == "Pagada")
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                                    <span class="bi bi-check-circle-fill me-1"></span>@context.Estado
+                                </span>
+                            }
+                            else if (context.Estado == "Vencida")
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1">
+                                    <span class="bi bi-exclamation-triangle-fill me-1"></span>@context.Estado
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1">
+                                    <span class="bi bi-hourglass-split me-1"></span>@(string.IsNullOrEmpty(context.Estado) ? "Pendiente" : context.Estado)
+                                </span>
+                            }
+                        </TemplateColumn>
+                        <TemplateColumn Title="Opciones">
+                            <div class="d-flex justify-content-center gap-2">
+                                @if (context.Estado != "Pagada")
+                                {
+                                    <button type="button"
+                                            class="btn btn-outline-success btn-sm bi bi-calendar-check"
+                                            title="Programar Pago"
+                                            @onclick="ProgramarPago"></button>
+                                }
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm bi bi-pencil"
+                                        title="Editar"
+                                        @onclick="(() => Editar(context.FacturasId))"></button>
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm bi bi-trash"
+                                        title="Eliminar"
+                                        @onclick="(() => Eliminar(context.FacturasId))"></button>
+                            </div>
+                        </TemplateColumn>
+                    </QuickGrid>
+                </div>
+            </div>
+
+            @* Barra inferior de resumen *@
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-0 mt-3">
+                <label class="bi bi-layers mb-0">
+                    <strong> Total de registros de facturas: @ListaFacturas.Count</strong>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
+    public List<Proveedores> ListaProveedores { get; set; } = new List<Proveedores>();
+    public string FiltroEstado { get; set; } = "Todos";
+    public int FiltroProveedorId { get; set; } = 0;
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resProveedores = await proveedoresService.GetList(p => true);
+        if (resProveedores.IsSuccess && resProveedores.Value != null)
+        {
+            ListaProveedores = resProveedores.Value;
+        }
+
+        var result = await facturasService.GetList(f => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaFacturas = result.Value;
+        }
+    }
+
+    public async Task Filtro()
+    {
+        if (ValorFiltro.Trim() != "")
+        {
+            string busqueda = ValorFiltro.Trim().ToLower();
+            int.TryParse(ValorFiltro.Trim().Replace("F-", "").Replace("f-", ""), out int numFactura);
+
+            var result = await facturasService.GetList(f =>
+                (numFactura > 0 && f.NumFactura == numFactura) ||
+                (f.Proveedor != null && f.Proveedor.Nombre.ToLower().Contains(busqueda)) ||
+                (f.Proveedor != null && f.Proveedor.Rnc.Contains(ValorFiltro.Trim())));
+
+            if (result.IsSuccess && result.Value != null)
+            {
+                ListaFacturas = result.Value;
+            }
+        }
+        else
+        {
+            var result = await facturasService.GetList(f => true);
+            if (result.IsSuccess && result.Value != null)
+            {
+                ListaFacturas = result.Value;
+            }
+        }
+
+        if (FiltroEstado != "Todos")
+        {
+            ListaFacturas = ListaFacturas.Where(f => f.Estado == FiltroEstado).ToList();
+        }
+
+        if (FiltroProveedorId > 0)
+        {
+            ListaFacturas = ListaFacturas.Where(f => f.ProveedorId == FiltroProveedorId).ToList();
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            ListaFacturas = ListaFacturas.Where(f => f.Fecha >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            ListaFacturas = ListaFacturas.Where(f => f.Fecha <= FechaHasta.Value).ToList();
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        FiltroEstado = "Todos";
+        FiltroProveedorId = 0;
+        FechaDesde = null;
+        FechaHasta = null;
+        ValorFiltro = string.Empty;
+
+        var result = await facturasService.GetList(f => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaFacturas = result.Value;
+        }
+    }
+
+    private double ObtenerMontoFactura(Facturas factura)
+    {
+        if (factura.Detalles == null)
+            return 0;
+
+        return factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+
+    private void Crear()
+    {
+        navigationManager.NavigateTo("/Facturas/Crear");
+    }
+
+    private void Editar(int id)
+    {
+        navigationManager.NavigateTo($"/Facturas/Editar/{id}");
+    }
+
+    private void ProgramarPago()
+    {
+        navigationManager.NavigateTo("/Pagos/Programar");
+    }
+
+    public async Task Eliminar(int id)
+    {
+        await facturasService.Eliminar(id);
+        var result = await facturasService.GetList(f => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            ListaFacturas = result.Value;
+        }
+    }
+}
