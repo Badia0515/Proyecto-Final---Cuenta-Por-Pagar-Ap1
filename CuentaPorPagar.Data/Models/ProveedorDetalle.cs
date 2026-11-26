@@ -14,6 +14,9 @@ public class ProveedorDetalle
     [Range(1, int.MaxValue, ErrorMessage ="")]
     public int PagoId { get; set; }
 
+    [Range(1, int.MaxValue, ErrorMessage = "")]
+    public int Cantidad { get; set; }
+
     [ForeignKey("ProveedorId")]
     [InverseProperty("detalle")]
     public virtual Proveedores Proveedor { get; set; } = null!;
