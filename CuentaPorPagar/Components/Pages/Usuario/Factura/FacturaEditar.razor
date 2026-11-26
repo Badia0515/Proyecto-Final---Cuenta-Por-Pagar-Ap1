@@ -1,0 +1,247 @@
+﻿@page "/Facturas/Editar/{id:int}"
+@rendermode InteractiveServer
+@inject FacturaServices facturasService
+@inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+
+<PageTitle>Editar Factura</PageTitle>
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex align-items-center gap-3">
+            <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                <label class="bi bi-pencil-square fs-4 mb-0"></label>
+            </div>
+            <div>
+                <h5 class="card-title mb-0">Editar Factura</h5>
+                <span class="text-muted">
+                    Modifica los datos y detalles de la factura seleccionada
+                </span>
+            </div>
+        </div>
+
+        <EditForm Model="Factura" OnValidSubmit="Guardar" FormName="EditarFactura">
+            <DataAnnotationsValidator />
+
+            <div class="card-body">
+                @* Tarjeta 1: Datos de la Factura *@
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                        <label class="bi bi-file-earmark-text mb-0"></label>
+                        <h6 class="mb-0">Datos de la Factura</h6>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <strong>Proveedor Principal <span class="text-danger">*</span></strong>
+                                </label>
+                                <InputSelect class="form-select" @bind-Value="Factura.ProveedorId">
+                                    <option value="0">Seleccionar Proveedor</option>
+                                    @foreach (var prov in ListaProveedores)
+                                    {
+                                        <option value="@prov.ProveedorId">@prov.Nombre</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => Factura.ProveedorId)" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <strong>No. Factura <span class="text-danger">*</span></strong>
+                                </label>
+                                <InputNumber class="form-control" @bind-Value="Factura.NumFactura" />
+                                <ValidationMessage For="@(() => Factura.NumFactura)" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <strong>Fecha Factura <span class="text-danger">*</span></strong>
+                                </label>
+                                <InputDate class="form-control" @bind-Value="Factura.Fecha" />
+                                <ValidationMessage For="@(() => Factura.Fecha)" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">
+                                    <strong>Estado <span class="text-danger">*</span></strong>
+                                </label>
+                                <InputSelect class="form-select" @bind-Value="Factura.Estado">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Pagada">Pagada</option>
+                                    <option value="Vencida">Vencida</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => Factura.Estado)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Tarjeta 2: Detalle de la Factura *@
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                        <label class="bi bi-list-check mb-0"></label>
+                        <h6 class="mb-0">Detalle de la Factura</h6>
+                    </div>
+
+                    <div class="card-body">
+                        @* Componente Picker de Detalles *@
+                        <FacturaDetallePicker Proveedores="ListaProveedores"
+                                              OnDetalleAgregado="HandleDetalleAgregado" />
+
+                        @* Tabla de detalles y Total a la derecha *@
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Proveedor</th>
+                                                <th>Descripcion</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-end">Precio</th>
+                                                <th class="text-end">Importe</th>
+                                                <th class="text-center">Opciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Factura.Detalles.Count == 0)
+                                            {
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted py-4">
+                                                        No hay detalles agregados a la factura.
+                                                    </td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                int contador = 1;
+                                                @foreach (var item in Factura.Detalles)
+                                                {
+                                                    <tr>
+                                                        <td>@contador</td>
+                                                        <td>@ObtenerNombreProveedor(item.ProveedorId)</td>
+                                                        <td>@item.Descripcion</td>
+                                                        <td class="text-center">@item.Cantidad</td>
+                                                        <td class="text-end">RD$ @item.Precio.ToString("N2")</td>
+                                                        <td class="text-end fw-semibold">RD$ @((item.Cantidad * item.Precio).ToString("N2"))</td>
+                                                        <td class="text-center">
+                                                            <button type="button"
+                                                                    class="btn btn-danger btn-sm bi bi-trash"
+                                                                    @onclick="() => EliminarDetalle(item)"></button>
+                                                        </td>
+                                                    </tr>
+                                                    contador++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            @* Resumen Total *@
+                            <div class="col-md-4">
+                                <div class="card bg-light border">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between py-2 border-bottom">
+                                            <strong>Cantidad de Lineas:</strong>
+                                            <span class="fw-bold">@Factura.Detalles.Count</span>
+                                        </div>
+
+                                        <div class="bg-success text-white rounded p-3 mt-3 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <label class="bi bi-calculator me-1 mb-0"></label>
+                                                <strong>Total Factura:</strong>
+                                            </div>
+                                            <span class="fs-5 fw-bold">RD$ @Factura.Detalles.Sum(d => d.Cantidad * d.Precio).ToString("N2")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Nota inferior *@
+                        <div class="alert alert-info d-flex align-items-center gap-2 mb-0 mt-3 py-2">
+                            <label class="bi bi-info-circle mb-0"></label>
+                            <span>
+                                <strong>Nota:</strong> Los montos se calculan automaticamente segun los detalles agregados.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Footer con botones a la derecha *@
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary bi bi-arrow-left" @onclick="Volver">
+                    Volver
+                </button>
+                <button type="submit" class="btn btn-success bi bi-floppy">
+                    Guardar
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    public Facturas Factura { get; set; } = new Facturas();
+    public List<Proveedores> ListaProveedores { get; set; } = new List<Proveedores>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resProveedores = await proveedoresService.GetList(p => true);
+        if (resProveedores.IsSuccess && resProveedores.Value != null)
+        {
+            ListaProveedores = resProveedores.Value;
+        }
+
+        var result = await facturasService.Buscar(id);
+        if (result.IsSuccess && result.Value != null)
+        {
+            Factura = result.Value;
+            Factura.Proveedor = null!;
+        }
+    }
+
+    private void HandleDetalleAgregado(FacturaDetalle nuevoDetalle)
+    {
+        Factura.Detalles.Add(nuevoDetalle);
+    }
+
+    private void EliminarDetalle(FacturaDetalle item)
+    {
+        Factura.Detalles.Remove(item);
+    }
+
+    private string ObtenerNombreProveedor(int proveedorId)
+    {
+        var prov = ListaProveedores.FirstOrDefault(p => p.ProveedorId == proveedorId);
+        return prov != null ? prov.Nombre : "--";
+    }
+
+    private async Task Guardar()
+    {
+        if (Factura.Detalles == null || !Factura.Detalles.Any())
+        {
+            return;
+        }
+
+        Factura.Proveedor = null!;
+        var resultado = await facturasService.Guardar(Factura);
+        if (resultado.IsSuccess)
+        {
+            navigationManager.NavigateTo("/Facturas/Index");
+        }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/Facturas/Index");
+    }
+}
