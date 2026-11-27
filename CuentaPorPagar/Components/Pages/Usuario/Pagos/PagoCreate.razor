@@ -260,7 +260,7 @@
     protected override async Task OnInitializedAsync()
     {
         pago.FechaProgramada = DateOnly.FromDateTime(DateTime.Now);
-        pago.Estado = "Pendiente de aprobacion";
+        pago.Estado = "Por Aprobar";
 
         var result = await facturasService.GetList(f => true);
         if (result.IsSuccess && result.Value != null)
@@ -287,10 +287,10 @@
             MontoFactura = ObtenerMontoFactura(FacturaSeleccionada);
 
             double totalPagado = 0;
-            var resPagos = await pagosService.GetList(p => p.FacturaId == encontrada.FacturasId && p.Estado == "Pagado");
-            if (resPagos.IsSuccess && resPagos.Value != null)
+            var resultPagos = await pagosService.GetList(p => p.FacturaId == encontrada.FacturasId && p.Estado == "Aprobada");
+            if (resultPagos.IsSuccess && resultPagos.Value != null)
             {
-                totalPagado = resPagos.Value.Sum(p => p.Monto);
+                totalPagado = resultPagos.Value.Sum(p => p.Monto);
             }
 
             SaldoPendiente = MontoFactura - totalPagado;
@@ -317,7 +317,7 @@
             return;
         }
 
-        pago.Estado = "Pendiente de aprobacion";
+        pago.Estado = "Por Aprobar";
 
         var result = await pagosService.Guardar(pago);
         if (result.IsSuccess)

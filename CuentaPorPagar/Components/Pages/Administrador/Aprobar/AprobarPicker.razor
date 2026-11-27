@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            @if (PagoSeleccionado.Estado == "Por Aprobar")
+            @if (PagoSeleccionado.Estado == "Por Aprobar" || PagoSeleccionado.Estado == "Pendiente de aprobacion")
             {
                 <div class="d-flex gap-2 mt-3">
                     <button type="button"

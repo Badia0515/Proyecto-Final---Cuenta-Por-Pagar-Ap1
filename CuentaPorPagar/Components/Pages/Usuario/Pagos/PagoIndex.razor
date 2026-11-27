@@ -1,0 +1,228 @@
+﻿@page "/Pagos/Index"
+@using CuentasPorPagar.Data.Models
+@rendermode InteractiveServer
+@inject ProveedoresService proveedoresService
+@inject PagosService pagosService
+@inject NavigationManager navigationManager
+
+<PageTitle>Programaciones de Pago</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-calendar2-check fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Programaciones de Pago</h5>
+                    <span class="text-muted">
+                        Consulta y administra las programaciones de pago registradas en el sistema
+                    </span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success bi bi-plus-square" @onclick="IrAProgramar">
+                Programar Pago
+            </button>
+        </div>
+
+        <div class="card-body">
+            @* Fila de filtros directa *@
+            <div class="row g-3 align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1"><strong>Filtrar por Estado</strong></label>
+                    <InputSelect class="form-select" @bind-Value="FiltroEstado">
+                        <option value="Todos">Todos los estados</option>
+                        <option value="Por Aprobar">Por Aprobar</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small mb-1"><strong>Proveedor</strong></label>
+                    <InputSelect class="form-select" @bind-Value="ProveedorId">
+                        <option value="0">Todos los proveedores</option>
+                        @foreach (var prov in proveedores)
+                        {
+                            <option value="@prov.ProveedorId">@prov.Nombre</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Desde</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaDesde" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1"><strong>Hasta</strong></label>
+                    <InputDate class="form-control" @bind-Value="FechaHasta" />
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="button" class="btn btn-success w-100 bi bi-search" @onclick="Filtro"></button>
+                    <button type="button" class="btn btn-outline-secondary w-100 bi bi-arrow-clockwise" @onclick="Restablecer"></button>
+                </div>
+            </div>
+
+            @* Tabla de programación de pagos *@
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-success">
+                        <tr>
+                            <th>No. Prog.</th>
+                            <th>No. Factura</th>
+                            <th>Proveedor</th>
+                            <th>Fecha Pago</th>
+                            <th>Tipo Pago</th>
+                            <th>Monto</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (pagos.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No hay programaciones de pago registradas.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var pago in pagos)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">PP-@pago.PagosId.ToString("D4")</td>
+                                    <td class="fw-semibold">F-@(pago.Factura?.NumFactura.ToString("D4") ?? "0000")</td>
+                                    <td class="fw-semibold">@(pago.Factura?.Proveedor?.Nombre ?? "--")</td>
+                                    <td>@pago.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                                    <td>@pago.TipoPago</td>
+                                    <td class="fw-semibold">RD$ @pago.Monto.ToString("N2")</td>
+                                    <td class="text-center">
+                                        @if (pago.Estado == "Aprobada")
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">Aprobada</span>
+                                        }
+                                        else if (pago.Estado == "Rechazada")
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1">Rechazada</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1">Por Aprobar</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            @if (pago.Estado == "Por Aprobar" || pago.Estado == "Pendiente de aprobacion")
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-outline-primary btn-sm bi bi-pencil"
+                                                        @onclick="() => IrAEditar(pago.PagosId)"></button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-outline-secondary btn-sm bi bi-eye"
+                                                        @onclick="() => IrAEditar(pago.PagosId)"></button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Barra verde inferior *@
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-0 mt-3 py-2">
+                <label class="bi bi-layers mb-0"></label>
+                <strong>Total de registros de programaciones: @pagos.Count</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Proveedores> proveedores { get; set; } = new List<Proveedores>();
+    public List<Pagos> pagos { get; set; } = new List<Pagos>();
+
+    public string FiltroEstado { get; set; } = "Todos";
+    public int ProveedorId { get; set; }
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultProv = await proveedoresService.GetList(p => p.Estado);
+        if (resultProv.IsSuccess && resultProv.Value != null)
+        {
+            proveedores = resultProv.Value;
+        }
+
+        await Filtro();
+    }
+
+    public async Task Filtro()
+    {
+        var result = await pagosService.GetList(p => true);
+        if (result.IsSuccess && result.Value != null)
+        {
+            pagos = result.Value;
+        }
+
+        if (FiltroEstado != "Todos")
+        {
+            if (FiltroEstado == "Por Aprobar")
+            {
+                pagos = pagos.Where(p => p.Estado == "Por Aprobar" || p.Estado == "Pendiente de aprobacion").ToList();
+            }
+            else
+            {
+                pagos = pagos.Where(p => p.Estado == FiltroEstado).ToList();
+            }
+        }
+
+        if (ProveedorId > 0)
+        {
+            pagos = pagos.Where(p => p.Factura != null && p.Factura.ProveedorId == ProveedorId).ToList();
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            pagos = pagos.Where(p => p.FechaProgramada >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            pagos = pagos.Where(p => p.FechaProgramada <= FechaHasta.Value).ToList();
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        FiltroEstado = "Todos";
+        ProveedorId = 0;
+        FechaDesde = null;
+        FechaHasta = null;
+
+        await Filtro();
+    }
+
+    private void IrAProgramar()
+    {
+        navigationManager.NavigateTo("/Pagos/Programar");
+    }
+
+    private void IrAEditar(int pagosId)
+    {
+        navigationManager.NavigateTo($"/Pagos/Editar/{pagosId}");
+    }
+}

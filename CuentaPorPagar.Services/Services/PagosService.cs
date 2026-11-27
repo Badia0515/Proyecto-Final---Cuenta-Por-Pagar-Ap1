@@ -34,12 +34,11 @@ namespace CuentasPorPagar.Services
             return Result.Success(Eliminado);
         }
 
-        public async Task<Result<List<Pagos>>> GetList(
-            Expression<Func<Pagos, bool>> criterio)
+        public async Task<Result<List<Pagos>>> GetList(Expression<Func<Pagos, bool>> criterio)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-
-            return await context.pagos.Where(criterio).AsNoTracking().ToListAsync();
+            var lista = await context.pagos.Include(p => p.Factura).ThenInclude(f => f!.Proveedor).AsNoTracking().Where(criterio).ToListAsync();
+            return Result.Success(lista);
         }
 
         public async Task<bool> Insertar(Pagos pagos)
