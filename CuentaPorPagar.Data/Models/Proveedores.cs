@@ -23,9 +23,9 @@ public class Proveedores
     [Range(0, double.MaxValue, ErrorMessage = "El balance no puede ser negativo")]
     public double Balance { get; set; } = 0;
 
-    [Required(ErrorMessage ="Indique el Estado del Proveedor")]
-    public bool Estado { get; set; }
+    [Required(ErrorMessage = "Indique el Estado del Proveedor")]
+    public bool Estado { get; set; } = true;
 
     [InverseProperty("Proveedor")]
-    public virtual ICollection<ProveedorDetalle> detalle { get; set; } = null!;
+    public virtual ICollection<ProveedorDetalle> detalle { get; set; } = new List<ProveedorDetalle>();
 }
