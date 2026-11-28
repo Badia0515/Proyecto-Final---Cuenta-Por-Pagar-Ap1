@@ -112,9 +112,6 @@
                                             <button type="button"
                                                     class="btn btn-outline-primary btn-sm bi bi-pencil"
                                                     @onclick="() => Editar(Proveedor.ProveedorId)"></button>
-                                            <button type="button"
-                                                    class="btn btn-outline-danger btn-sm bi bi-trash"
-                                                    @onclick="() => Eliminar(Proveedor.ProveedorId)"></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -218,15 +215,5 @@
     private void Editar(int id)
     {
         navigationManager.NavigateTo($"/Proveedor/Editar/{id}");
-    }
-
-    public async Task Eliminar(int id)
-    {
-        await proveedoresService.Eliminar(id);
-        var result = await proveedoresService.GetList(P => true);
-        if (result.IsSuccess && result.Value != null)
-        {
-            proveedores = result.Value;
-        }
     }
 }

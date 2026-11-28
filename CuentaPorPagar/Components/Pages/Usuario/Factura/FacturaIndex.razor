@@ -39,6 +39,7 @@
                         <option value="Pendiente">Pendiente</option>
                         <option value="Pagada">Pagada</option>
                         <option value="Vencida">Vencida</option>
+                        <option value="Devuelto">Devuelto</option>
                     </InputSelect>
                 </div>
 
@@ -102,6 +103,12 @@
                                     <span class="bi bi-exclamation-triangle-fill me-1"></span>@context.Estado
                                 </span>
                             }
+                            else if (context.Estado == "Devuelto")
+                            {
+                                <span class="badge text-bg-warning px-3 py-1">
+                                    <span class="bi bi-arrow-return-left me-1"></span>@context.Estado
+                                </span>
+                            }
                             else
                             {
                                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1">
@@ -111,7 +118,7 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Opciones">
                             <div class="d-flex justify-content-center gap-2">
-                                @if (context.Estado != "Pagada")
+                                @if (context.Estado != "Pagada" && context.Estado != "Devuelto")
                                 {
                                     <button type="button"
                                             class="btn btn-outline-success btn-sm bi bi-calendar-check"

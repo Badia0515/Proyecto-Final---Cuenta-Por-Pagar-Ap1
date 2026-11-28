@@ -14,17 +14,14 @@ namespace CuentasPorPagar.Data.Models
         [Required(ErrorMessage = "Debe seleccionar una factura")]
         public int FacturasId { get; set; }
 
-        [Required(ErrorMessage = "Debe ingresar la fecha de devolución")]
+        [Required(ErrorMessage = "Debe ingresar la fecha de devolucion")]
         public DateOnly Fecha { get; set; }
 
-        [Range(1, double.MaxValue, ErrorMessage = "Ingrese un monto válido")]
+        [Range(1, double.MaxValue, ErrorMessage = "Ingrese un monto valido")]
         public double Monto { get; set; }
 
-        [Required(ErrorMessage = "Debe ingresar el motivo de la devolución")]
+        [Required(ErrorMessage = "Debe ingresar el motivo de la devolucion")]
         public string Motivo { get; set; } = null!;
-
-        [Required(ErrorMessage = "Establezca el estado de la devolución")]
-        public string Estado { get; set; } = null!;
 
         [ForeignKey("FacturasId")]
         public virtual Facturas Factura { get; set; } = null!;

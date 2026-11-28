@@ -16,6 +16,9 @@ public class Facturas {
     [Required(ErrorMessage ="Este campo es obligatorio")]
     public DateOnly Fecha { get; set; }
 
+    [Required(ErrorMessage = "Este campo es obligatorio")]
+    public DateOnly FechaVencimiento { get; set; }
+
     [Required(ErrorMessage="Este campo es obligatorio")]
     public string? Estado { get; set; }
 

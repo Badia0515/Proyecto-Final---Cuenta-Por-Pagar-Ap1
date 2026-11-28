@@ -1,21 +1,23 @@
 ﻿@using ApexCharts
 @if (Pagos.Count > 0)
 {
-    <ApexChart TItem="Pagos"
-               Title="Total Pagado por Mes">
+    <div class="w-100">
+        <ApexChart TItem="Pagos"
+                   Title="Total Pagado por Mes">
 
-        <ApexPointSeries TItem="Pagos"
-                         Items="Pagos"
-                         Name="Monto Pagado"
-                         XValue="@(p => ObtenerNombreMes(p.FechaProgramada.Month))"
-                         YAggregate="@(p => (decimal)p.Sum(x => x.Monto))"
-                         SeriesType="SeriesType.Bar"
-                         Color="#0d9488" />
-    </ApexChart>
+            <ApexPointSeries TItem="Pagos"
+                             Items="Pagos"
+                             Name="Monto Pagado"
+                             XValue="@(p => ObtenerNombreMes(p.FechaProgramada.Month))"
+                             YAggregate="@(p => (decimal)p.Sum(x => x.Monto))"
+                             SeriesType="SeriesType.Bar"
+                             Color="#198754" />
+        </ApexChart>
+    </div>
 }
 else
 {
-    <p class="text-center text-muted my-4">No hay pagos emitidos para graficar.</p>
+    <div class="text-center text-muted my-4">No hay pagos emitidos para graficar.</div>
 }
 
 @code {
@@ -25,6 +27,10 @@ else
     private string ObtenerNombreMes(int mes)
     {
         string[] nombresMeses = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
+        if (mes < 1 || mes > 12)
+        {
+            return "--";
+        }
         return nombresMeses[mes - 1];
     }
 }

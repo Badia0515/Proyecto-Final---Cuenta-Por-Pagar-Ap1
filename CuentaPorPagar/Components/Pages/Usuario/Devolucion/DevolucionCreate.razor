@@ -2,7 +2,6 @@
 @rendermode InteractiveServer
 @inject DevolucionesService devolucionesService
 @inject FacturaServices facturasService
-@inject PagosService pagosService
 @inject NavigationManager navigationManager
 
 <PageTitle>Devolucion de Factura</PageTitle>
@@ -11,46 +10,47 @@
     <div class="card shadow-lg">
         <div class="card-header d-flex align-items-center gap-3">
             <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
-                <label class="bi bi-arrow-return-left fs-4 mb-0"></label>
+                <i class="bi bi-arrow-return-left fs-4"></i>
             </div>
             <div>
                 <h5 class="card-title mb-0">Devolucion de Factura</h5>
-                <p class="text-muted mb-0">
-                    Registrar la devolucion de una factura al proveedor
-                </p>
+                <span class="text-muted">
+                    Registrar la devolucion de una factura pagada al proveedor
+                </span>
             </div>
         </div>
 
         <div class="card-body">
-            <EditForm Model="Devolucion" OnValidSubmit="Guardar">
+            <EditForm Model="Devolucion" OnValidSubmit="Guardar" FormName="CrearDevolucion">
                 <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" />
+
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>@Error</span>
+                    </div>
+                }
 
                 <div class="row">
-
                     @* Columna izquierda: Formulario Registrar Devolucion *@
                     <div class="col-md-7 mb-3">
                         <div class="card shadow-sm h-100">
                             <div class="card-header bg-success text-white">
                                 <h6 class="mb-0">
-                                    <label class="bi bi-file-earmark-plus me-2 mb-0">Registrar Devolucion</label>
+                                    <i class="bi bi-file-earmark-plus me-2"></i>Registrar Devolucion
                                 </h6>
                             </div>
                             <div class="card-body">
 
                                 <div class="row mb-3 align-items-center">
                                     <label class="col-sm-4 col-form-label">
-                                        <strong>Factura: <span class="text-danger">*</span></strong>
+                                        <strong>Factura Pagada: <span class="text-danger">*</span></strong>
                                     </label>
                                     <div class="col-sm-8">
-                                        <InputSelect class="form-select"
-                                                     @bind-Value="Devolucion.FacturasId"
-                                                     @bind-Value:after="OnFacturaChanged">
-                                            <option value="0">Seleccionar Factura</option>
-                                            @foreach (var item in ListaFacturas)
-                                            {
-                                                <option value="@item.FacturasId">Factura #@item.NumFactura</option>
-                                            }
-                                        </InputSelect>
+                                        <PickerFactura @bind-Value="Devolucion.FacturasId"
+                                                       @bind-Value:after="OnFacturaChanged" />
                                         <ValidationMessage For="@(() => Devolucion.FacturasId)" />
                                     </div>
                                 </div>
@@ -94,86 +94,66 @@
                         <div class="card shadow-sm h-100 bg-light">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">
-                                    <label class="bi bi-info-circle text-success me-2 mb-0">Informacion de la Factura</label>
+                                    <i class="bi bi-info-circle text-success me-2"></i>Informacion de la Factura
                                 </h6>
                             </div>
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                    <label class="bi bi-people text-success mb-0"><strong> Proveedor:</strong></label>
+                                    <span class="text-success">
+                                        <i class="bi bi-people me-1"></i><strong>Proveedor:</strong>
+                                    </span>
                                     <span>
-                                        @if (FacturaSeleccionada != null && FacturaSeleccionada.Proveedor != null)
-                                        {
-                                            @FacturaSeleccionada.Proveedor.Nombre
-                                        }
-                                        else
-                                        {
-                                            <span>--</span>
-                                        }
+                                        @(FacturaSeleccionada?.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "--")
                                     </span>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                    <label class="bi bi-file-earmark-text text-success mb-0"><strong> No. Factura:</strong></label>
+                                    <span class="text-success">
+                                        <i class="bi bi-file-earmark-text me-1"></i><strong>No. Factura:</strong>
+                                    </span>
                                     <span>
-                                        @if (FacturaSeleccionada != null)
-                                        {
-                                            @FacturaSeleccionada.NumFactura
-                                        }
-                                        else
-                                        {
-                                            <span>--</span>
-                                        }
+                                        @(FacturaSeleccionada != null ? FacturaSeleccionada.NumFactura.ToString() : "--")
                                     </span>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                    <label class="bi bi-calendar-event text-success mb-0"><strong> Fecha Factura:</strong></label>
+                                    <span class="text-success">
+                                        <i class="bi bi-calendar-event me-1"></i><strong>Fecha Factura:</strong>
+                                    </span>
                                     <span>
-                                        @if (FacturaSeleccionada != null)
-                                        {
-                                            @FacturaSeleccionada.Fecha.ToString("dd/MM/yyyy")
-                                        }
-                                        else
-                                        {
-                                            <span>--</span>
-                                        }
+                                        @(FacturaSeleccionada != null ? FacturaSeleccionada.Fecha.ToString("dd/MM/yyyy") : "--")
                                     </span>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                    <label class="bi bi-cash text-success mb-0"><strong> Monto Factura:</strong></label>
+                                    <span class="text-success">
+                                        <i class="bi bi-cash me-1"></i><strong>Estado:</strong>
+                                    </span>
                                     <span>
-                                        @if (FacturaSeleccionada != null)
-                                        {
-                                            <span>RD$ @ObtenerMontoFactura(FacturaSeleccionada).ToString("N2")</span>
-                                        }
-                                        else
-                                        {
-                                            <span>RD$ 0.00</span>
-                                        }
+                                        @(FacturaSeleccionada != null ? FacturaSeleccionada.Estado : "--")
                                     </span>
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center pt-2">
-                                    <label class="bi bi-coin text-success mb-0"><strong> Saldo Pendiente:</strong></label>
-                                    <span class="fw-bold text-success">RD$ @SaldoPendiente.ToString("N2")</span>
+                                    <span class="text-success">
+                                        <i class="bi bi-coin me-1"></i><strong>Monto Factura:</strong>
+                                    </span>
+                                    <span class="fw-bold text-success">RD$ @MontoFacturaSeleccionada.ToString("N2")</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 @* Botones inferiores *@
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar">
-                        <span class="bi bi-x-lg"> Cancelar</span>
+                        <i class="bi bi-x-lg me-1"></i>Cancelar
                     </button>
                     <button type="submit" class="btn btn-success">
-                        <span class="bi bi-floppy"> Registrar Devolucion</span>
+                        <i class="bi bi-floppy me-1"></i>Registrar Devolucion
                     </button>
                 </div>
-
             </EditForm>
         </div>
     </div>
@@ -181,48 +161,35 @@
 
 @code {
     public Devoluciones Devolucion { get; set; } = new Devoluciones();
-    public List<Facturas> ListaFacturas { get; set; } = new List<Facturas>();
-    public Facturas FacturaSeleccionada { get; set; } = null!;
-    public double SaldoPendiente { get; set; }
+    public List<Facturas> FacturasPagadas { get; set; } = new List<Facturas>();
+    public Facturas? FacturaSeleccionada { get; set; }
+    public double MontoFacturaSeleccionada { get; set; }
+    public string Error { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         Devolucion.Fecha = DateOnly.FromDateTime(DateTime.Now);
 
-        var resFacturas = await facturasService.GetList(f => true);
+        var resFacturas = await facturasService.GetList(f => f.Estado == "Pagada");
         if (resFacturas.IsSuccess && resFacturas.Value != null)
         {
-            ListaFacturas = resFacturas.Value;
+            FacturasPagadas = resFacturas.Value;
         }
     }
 
-    private async Task OnFacturaChanged()
+    private void OnFacturaChanged()
     {
+        Error = string.Empty;
+
         if (Devolucion.FacturasId == 0)
         {
-            FacturaSeleccionada = null!;
-            SaldoPendiente = 0;
+            FacturaSeleccionada = null;
+            MontoFacturaSeleccionada = 0;
             return;
         }
 
-        var factura = ListaFacturas.FirstOrDefault(f => f.FacturasId == Devolucion.FacturasId);
-        if (factura != null)
-        {
-            FacturaSeleccionada = factura;
-
-            double totalAbonado = 0;
-            var resPagos = await pagosService.GetList(p => p.FacturaId == factura.FacturasId && p.Estado == "Pagado");
-            if (resPagos.IsSuccess && resPagos.Value != null)
-            {
-                totalAbonado = resPagos.Value.Sum(p => p.Monto);
-            }
-
-            SaldoPendiente = ObtenerMontoFactura(factura) - totalAbonado;
-            if (SaldoPendiente < 0)
-            {
-                SaldoPendiente = 0;
-            }
-        }
+        FacturaSeleccionada = FacturasPagadas.FirstOrDefault(f => f.FacturasId == Devolucion.FacturasId);
+        MontoFacturaSeleccionada = FacturaSeleccionada != null ? ObtenerMontoFactura(FacturaSeleccionada) : 0;
     }
 
     private double ObtenerMontoFactura(Facturas factura)
@@ -236,8 +203,23 @@
 
     private async Task Guardar()
     {
-        if (Devolucion.FacturasId == 0 || Devolucion.Monto <= 0 || Devolucion.Monto > SaldoPendiente)
+        Error = string.Empty;
+
+        if (Devolucion.FacturasId == 0)
         {
+            Error = "Debe seleccionar una factura pagada.";
+            return;
+        }
+
+        if (Devolucion.Monto <= 0)
+        {
+            Error = "El monto de la devolucion debe ser mayor a cero.";
+            return;
+        }
+
+        if (Devolucion.Monto > MontoFacturaSeleccionada)
+        {
+            Error = $"El monto a devolver (RD$ {Devolucion.Monto:N2}) no puede superar el monto de la factura (RD$ {MontoFacturaSeleccionada:N2}).";
             return;
         }
 
@@ -245,6 +227,10 @@
         if (resultado.IsSuccess)
         {
             navigationManager.NavigateTo("/Devoluciones/Index");
+        }
+        else
+        {
+            Error = resultado.Error.Description ?? "No se pudo registrar la devolucion.";
         }
     }
 

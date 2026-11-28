@@ -97,13 +97,13 @@
     private async Task HandleProveedorSelected((Proveedores Proveedor, int cantidad) seleccion)
     {
         var yaExiste = proveedor.detalle.FirstOrDefault(l => l.ProveedorId == seleccion.Proveedor.ProveedorId);
-        if(yaExiste != null)
+        if (yaExiste != null)
         {
             yaExiste.Cantidad += seleccion.cantidad;
         }
         else
         {
-            var detalle = new ProveedorDetalle
+            var detalle = new CuentasPorPagar.Data.Models.ProveedorDetalle
             {
                 ProveedorId = seleccion.Proveedor.ProveedorId,
                 Cantidad = seleccion.cantidad,

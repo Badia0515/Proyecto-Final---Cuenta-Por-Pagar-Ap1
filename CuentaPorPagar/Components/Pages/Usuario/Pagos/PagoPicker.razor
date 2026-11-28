@@ -1,0 +1,325 @@
+﻿@page "/Pagos/Detalle/{PagosId:int}"
+@using CuentasPorPagar.Data.Models
+@inject PagosService pagosService
+@inject FacturaServices facturasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Detalle de Programacion de Pago</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-calendar-check fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Detalle de Programacion de Pago</h5>
+                    <span class="text-muted">
+                        Informacion registrada de la solicitud de pago
+                    </span>
+                </div>
+            </div>
+
+            <span class="badge bg-light text-dark border px-3 py-2">
+                No. Prog.: PP-@pago.PagosId.ToString("D4")
+            </span>
+        </div>
+
+        <div class="card-body">
+            @* Fila de Factura (igual que en Editar pero solo lectura) *@
+            <div class="row mb-4 align-items-center">
+                <div class="col-md-2">
+                    <label class="col-form-label">
+                        <strong>Factura:</strong>
+                    </label>
+                </div>
+
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white bi bi-file-earmark-text text-success"></span>
+                        <input class="form-control bg-light"
+                               value="@(FacturaSeleccionada.FacturasId > 0 ? $"Factura #{FacturaSeleccionada.NumFactura} - {(FacturaSeleccionada.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "Sin Proveedor")} (Monto: RD$ {MontoFactura:N2})" : "--")"
+                               readonly />
+                    </div>
+                </div>
+            </div>
+
+            @* Resumen de factura *@
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="bi bi-person text-success fs-4 mb-0"></label>
+                            <div>
+                                <div class="text-muted small"><strong>Proveedor</strong></div>
+                                <div>@(FacturaSeleccionada.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "--")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="bi bi-file-earmark-text text-success fs-4 mb-0"></label>
+                            <div>
+                                <div class="text-muted small"><strong>No. Factura</strong></div>
+                                <div>@(FacturaSeleccionada.FacturasId > 0 ? $"#{FacturaSeleccionada.NumFactura}" : "--")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="bi bi-cash-stack text-success fs-4 mb-0"></label>
+                            <div>
+                                <div class="text-muted small"><strong>Monto Factura</strong></div>
+                                <div class="fw-bold">RD$ @MontoFactura.ToString("N2")</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-center gap-2">
+                            <label class="bi bi-tag text-success fs-4 mb-0"></label>
+                            <div>
+                                <div class="text-muted small"><strong>Estado Programacion</strong></div>
+                                <div>
+                                    @if (pago.Estado == "Aprobada")
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">Aprobada</span>
+                                    }
+                                    else if (pago.Estado == "Rechazada")
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1">Rechazada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1">Por Aprobar</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Dos columnas centrales *@
+            <div class="row">
+                @* Columna izquierda: Datos de la Factura *@
+                <div class="col-md-5 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                            <label class="bi bi-file-earmark-text mb-0"></label>
+                            <h6 class="mb-0">Datos de la Factura</h6>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <span class="bi bi-shop text-success me-1"></span>
+                                    <strong>Proveedor:</strong>
+                                </label>
+                                <input class="form-control bg-light"
+                                       value="@(FacturaSeleccionada.Proveedor != null ? FacturaSeleccionada.Proveedor.Nombre : "--")"
+                                       readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <span class="bi bi-cash-stack text-success me-1"></span>
+                                    <strong>Monto Factura:</strong>
+                                </label>
+                                <input class="form-control bg-light"
+                                       value="RD$ @MontoFactura.ToString("N2")"
+                                       readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <span class="bi bi-calendar-event text-success me-1"></span>
+                                    <strong>Fecha Factura:</strong>
+                                </label>
+                                <input class="form-control bg-light"
+                                       value="@(FacturaSeleccionada.FacturasId > 0 ? FacturaSeleccionada.Fecha.ToString("dd/MM/yyyy") : "--")"
+                                       readonly />
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label">
+                                    <span class="bi bi-calculator text-success me-1"></span>
+                                    <strong>Saldo Pendiente:</strong>
+                                </label>
+                                <input class="form-control bg-light fw-bold text-success"
+                                       value="RD$ @SaldoPendiente.ToString("N2")"
+                                       readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Columna derecha: Datos de la Programacion *@
+                <div class="col-md-7 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white d-flex align-items-center gap-2">
+                            <label class="bi bi-calendar-plus mb-0"></label>
+                            <h6 class="mb-0">Programacion del Pago (Solicitud)</h6>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-calendar-date text-success me-1"></span>
+                                        <strong>Fecha Programada:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="@pago.FechaProgramada.ToString("dd/MM/yyyy")"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-cash-coin text-success me-1"></span>
+                                        <strong>Monto a Pagar:</strong>
+                                    </label>
+                                    <input class="form-control bg-light fw-bold text-success"
+                                           value="RD$ @pago.Monto.ToString("N2")"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-credit-card text-success me-1"></span>
+                                        <strong>Tipo de Pago:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="@pago.TipoPago"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <span class="bi bi-hash text-success me-1"></span>
+                                        <strong>Referencia:</strong>
+                                    </label>
+                                    <input class="form-control bg-light"
+                                           value="@(string.IsNullOrWhiteSpace(pago.Referencia) ? "Sin referencia" : pago.Referencia)"
+                                           readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Fila inferior: Mensaje de estado y botones *@
+            <div class="row align-items-center g-3 mt-1">
+                <div class="col-md-8">
+                    @if (pago.Estado == "Por Aprobar" || pago.Estado == "Pendiente de aprobacion")
+                    {
+                        <div class="alert alert-info d-flex align-items-center gap-3 mb-0">
+                            <label class="bi bi-info-circle fs-4 mb-0"></label>
+                            <div>
+                                <div class="fw-bold">Flujo de Aprobacion</div>
+                                <span>
+                                    Esta solicitud se encuentra pendiente de revision y aprobacion por parte del gerente.
+                                </span>
+                            </div>
+                        </div>
+                    }
+                    else if (pago.Estado == "Aprobada")
+                    {
+                        <div class="alert alert-success d-flex align-items-center gap-3 mb-0">
+                            <label class="bi bi-check-circle fs-4 mb-0"></label>
+                            <div>
+                                <div class="fw-bold">Programacion Aprobada</div>
+                                <span>
+                                    Esta programacion ya fue aprobada por el gerente y no puede ser modificada.
+                                </span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger d-flex align-items-center gap-3 mb-0">
+                            <label class="bi bi-x-circle fs-4 mb-0"></label>
+                            <div>
+                                <div class="fw-bold">Programacion Rechazada</div>
+                                <span>
+                                    Esta programacion fue rechazada por el gerente y solo esta disponible para consulta.
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary bi bi-arrow-left" @onclick="Volver">
+                        Volver
+                    </button>
+                    @if (pago.Estado == "Por Aprobar" || pago.Estado == "Pendiente de aprobacion")
+                    {
+                        <button type="button" class="btn btn-primary bi bi-pencil" @onclick="IrAEditar">
+                            Editar
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PagosId { get; set; }
+
+    public Pagos pago { get; set; } = new Pagos();
+    public Facturas FacturaSeleccionada { get; set; } = new Facturas();
+    public double MontoFactura { get; set; }
+    public double SaldoPendiente { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PagosId > 0)
+        {
+            var resultPago = await pagosService.Buscar(PagosId);
+            if (resultPago.IsSuccess && resultPago.Value != null)
+            {
+                pago = resultPago.Value;
+
+                var resultFacturas = await facturasService.GetList(f => f.FacturasId == pago.FacturaId);
+                if (resultFacturas.IsSuccess && resultFacturas.Value != null)
+                {
+                    var encontrada = resultFacturas.Value.FirstOrDefault();
+                    if (encontrada != null)
+                    {
+                        FacturaSeleccionada = encontrada;
+                        if (encontrada.Detalles != null)
+                        {
+                            MontoFactura = (double)encontrada.Detalles.Sum(d => d.Cantidad * d.Precio);
+                        }
+
+                        double totalPagado = 0;
+                        var resultPagosAprobados = await pagosService.GetList(p => p.FacturaId == encontrada.FacturasId && p.Estado == "Aprobada");
+                        if (resultPagosAprobados.IsSuccess && resultPagosAprobados.Value != null)
+                        {
+                            totalPagado = resultPagosAprobados.Value.Sum(p => p.Monto);
+                        }
+
+                        SaldoPendiente = MontoFactura - totalPagado;
+                        if (SaldoPendiente < 0)
+                        {
+                            SaldoPendiente = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/Pagos/Index");
+    }
+
+    private void IrAEditar()
+    {
+        navigationManager.NavigateTo($"/Pagos/Editar/{PagosId}");
+    }
+}

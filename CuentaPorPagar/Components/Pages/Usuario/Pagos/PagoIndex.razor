@@ -120,16 +120,16 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm bi bi-eye"
+                                                    title="Ver Detalle"
+                                                    @onclick="() => IrADetalle(pago.PagosId)"></button>
+
                                             @if (pago.Estado == "Por Aprobar" || pago.Estado == "Pendiente de aprobacion")
                                             {
                                                 <button type="button"
                                                         class="btn btn-outline-primary btn-sm bi bi-pencil"
-                                                        @onclick="() => IrAEditar(pago.PagosId)"></button>
-                                            }
-                                            else
-                                            {
-                                                <button type="button"
-                                                        class="btn btn-outline-secondary btn-sm bi bi-eye"
+                                                        title="Editar"
                                                         @onclick="() => IrAEditar(pago.PagosId)"></button>
                                             }
                                         </div>
@@ -219,6 +219,11 @@
     private void IrAProgramar()
     {
         navigationManager.NavigateTo("/Pagos/Programar");
+    }
+
+    private void IrADetalle(int pagosId)
+    {
+        navigationManager.NavigateTo($"/Pagos/Detalle/{pagosId}");
     }
 
     private void IrAEditar(int pagosId)

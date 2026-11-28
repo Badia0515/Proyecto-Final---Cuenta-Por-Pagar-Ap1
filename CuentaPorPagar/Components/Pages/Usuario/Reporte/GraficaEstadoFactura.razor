@@ -1,18 +1,20 @@
 ﻿@using ApexCharts
 @if (ListaFacturas.Count > 0)
 {
-    <ApexChart TItem="Facturas"
-               Title="Facturas por Estado"
-               Options="opcionesPie">
+    <div class="w-100">
+        <ApexChart TItem="Facturas"
+                   Title="Facturas por Estado"
+                   Options="opcionesPie">
 
-        <ApexPointSeries TItem="Facturas"
-                         Items="ListaFacturas"
-                         Name="Cantidad"
-                         SeriesType="SeriesType.Pie"
-                         XValue="@(f => f.Estado)"
-                         YAggregate="@(f => f.Count())"
-                         OrderByDescending="e => e.Y" />
-    </ApexChart>
+            <ApexPointSeries TItem="Facturas"
+                             Items="ListaFacturas"
+                             Name="Cantidad"
+                             SeriesType="SeriesType.Pie"
+                             XValue="@(f => f.Estado)"
+                             YAggregate="@(f => f.Count())"
+                             OrderByDescending="e => e.Y" />
+        </ApexChart>
+    </div>
 }
 else
 {
@@ -27,6 +29,7 @@ else
 
     protected override void OnInitialized()
     {
+        opcionesPie.Colors = new List<string> { "#198754", "#ffc107", "#dc3545" };
         opcionesPie.PlotOptions = new PlotOptions
         {
             Pie = new PlotOptionsPie

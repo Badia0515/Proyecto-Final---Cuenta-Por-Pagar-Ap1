@@ -1,0 +1,125 @@
+﻿@page "/Proveedor/Detalle/{ProveedorId:int}"
+@rendermode InteractiveServer
+@inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+
+<PageTitle>Detalle del Proveedor</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        @* Encabezado principal *@
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded p-2 d-flex align-items-center justify-content-center">
+                    <label class="bi bi-truck fs-4 mb-0"></label>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Detalle del Proveedor</h5>
+                    <span class="text-muted">
+                        Información registrada del proveedor seleccionado
+                    </span>
+                </div>
+            </div>
+
+            <span class="badge bg-light text-dark border px-3 py-2">
+                ID: @proveedor.ProveedorId.ToString("D3")
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                @* Columna izquierda: Nombre, RNC y Telefono *@
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <span class="bi bi-person-fill text-success me-1"></span>
+                            <strong>Nombre</strong>
+                        </label>
+                        <input class="form-control bg-light" value="@proveedor.Nombre" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <span class="bi bi-card-heading text-success me-1"></span>
+                            <strong>RNC</strong>
+                        </label>
+                        <input class="form-control bg-light" value="@proveedor.Rnc" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <span class="bi bi-telephone-fill text-success me-1"></span>
+                            <strong>Telefono</strong>
+                        </label>
+                        <input class="form-control bg-light" value="@proveedor.Telefono" readonly />
+                    </div>
+                </div>
+
+                @* Columna derecha: Direccion y Estado *@
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <span class="bi bi-geo-alt-fill text-success me-1"></span>
+                            <strong>Direccion</strong>
+                        </label>
+                        <textarea class="form-control bg-light" rows="4" readonly>@proveedor.Direccion</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label d-block">
+                            <span class="bi bi-toggle-on text-success me-1"></span>
+                            <strong>Estado</strong>
+                        </label>
+                        @if (proveedor.Estado)
+                        {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2">Inactivo</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Footer con botones a la derecha *@
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary bi bi-arrow-left" @onclick="Volver">
+                Volver
+            </button>
+            <button type="button" class="btn btn-primary bi bi-pencil" @onclick="IrAEditar">
+                Editar
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ProveedorId { get; set; }
+
+    public Proveedores proveedor { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ProveedorId > 0)
+        {
+            var result = await proveedoresService.Buscar(ProveedorId);
+            if (result.IsSuccess && result.Value != null)
+            {
+                proveedor = result.Value;
+            }
+        }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/Proveedor/Index");
+    }
+
+    private void IrAEditar()
+    {
+        navigationManager.NavigateTo($"/Proveedor/Editar/{ProveedorId}");
+    }
+}

@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inject FacturaServices facturasService
+
+<InputSelect class="form-select"
+             TValue="int"
+             Value="Value"
+             ValueChanged="OnValueChanged"
+             ValueExpression="ValueExpression">
+    <option value="0">-- Seleccionar Factura Pagada --</option>
+    @foreach (var factura in FacturasPagadas)
+    {
+        <option value="@factura.FacturasId">
+            Factura #@factura.NumFactura - @(factura.Proveedor != null ? factura.Proveedor.Nombre : "Sin Proveedor") (RD$ @ObtenerMonto(factura).ToString("N2"))
+        </option>
+    }
+</InputSelect>
+
+@code {
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<int>>? ValueExpression { get; set; }
+
+    public List<Facturas> FacturasPagadas { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await facturasService.GetList(f => f.Estado == "Pagada");
+        if (resultado.IsSuccess && resultado.Value != null)
+        {
+            FacturasPagadas = resultado.Value;
+        }
+    }
+
+    private async Task OnValueChanged(int nuevoId)
+    {
+        Value = nuevoId;
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(nuevoId);
+        }
+    }
+
+    private double ObtenerMonto(Facturas factura)
+    {
+        if (factura.Detalles == null) return 0;
+        return (double)factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+}

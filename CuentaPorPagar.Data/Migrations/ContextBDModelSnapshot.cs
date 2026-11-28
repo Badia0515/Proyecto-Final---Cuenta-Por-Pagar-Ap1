@@ -16,7 +16,7 @@ partial class ContextBDModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261125210554_proveedor";
+    public override string LastMigrationId => "20261128001405_Actualizacion";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -68,10 +68,6 @@ partial class ContextBDModelSnapshot : ModelSnapshot
                     .HasColumnType("int");
 
                 SqlServerPropertyBuilderExtensions.UseIdentityColumn(devolucionId);
-
-                b.Property<string>("Estado")
-                    .IsRequired()
-                    .HasColumnType("nvarchar(max)");
 
                 b.Property<int>("FacturasId")
                     .HasColumnType("int");
@@ -137,6 +133,9 @@ partial class ContextBDModelSnapshot : ModelSnapshot
                     .HasColumnType("nvarchar(max)");
 
                 b.Property<DateOnly>("Fecha")
+                    .HasColumnType("date");
+
+                b.Property<DateOnly>("FechaVencimiento")
                     .HasColumnType("date");
 
                 b.Property<int>("NumFactura")
